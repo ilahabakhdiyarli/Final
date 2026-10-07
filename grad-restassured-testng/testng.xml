@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<suite name="GRAD-API-Suite" parallel="false" verbose="1">
+
+    <test name="EPIC-1 Saxlanmış alıcılar (Beneficiaries)">
+        <classes>
+            <class name="com.grad.api.epic1.BeneficiaryCreateTest"/>   <!-- GRAD-101 -->
+            <class name="com.grad.api.epic1.BeneficiaryListTest"/>     <!-- GRAD-102 -->
+            <class name="com.grad.api.epic1.BeneficiaryDeleteTest"/>   <!-- GRAD-103 -->
+        </classes>
+    </test>
+
+    <test name="EPIC-2 Virtual kartlar (Virtual cards)">
+        <classes>
+            <class name="com.grad.api.epic2.CardCreateTest"/>   <!-- GRAD-201 -->
+            <class name="com.grad.api.epic2.CardGetTest"/>      <!-- GRAD-202 -->
+            <class name="com.grad.api.epic2.CardBlockTest"/>    <!-- GRAD-203 -->
+            <class name="com.grad.api.epic2.CardUnblockTest"/>  <!-- GRAD-204 -->
+        </classes>
+    </test>
+
+    <test name="EPIC-3 Kommunal ödənişlər (Bill payments)">
+        <classes>
+            <class name="com.grad.api.epic3.BillersListTest"/>    <!-- GRAD-301 -->
+            <class name="com.grad.api.epic3.BillPaymentTest"/>    <!-- GRAD-302 -->
+            <class name="com.grad.api.epic3.PaymentHistoryTest"/> <!-- GRAD-303 -->
+        </classes>
+    </test>
+
+</suite>

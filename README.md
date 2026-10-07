@@ -641,3 +641,4 @@ Run it after changing any helper.
 | `No base URL set for relative address` | Set `ui_base_url` / `api_base_url` in `app.properties` |
 
 > Error messages are printed in Azerbaijani. The table above lists their English meaning.
+# FinalLayihe

@@ -1,0 +1,85 @@
+{
+  "id": "5f0c2b7a-9d4e-4a8a-8f0a-3b2c9e7a1d6f",
+  "name": "GRAD API Suite — Sandbox",
+  "values": [
+    {
+      "key": "baseUrl",
+      "value": "https://api.anarabbas.com",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "adminEmail",
+      "value": "",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "adminPassword",
+      "value": "",
+      "type": "secret",
+      "enabled": true
+    },
+    {
+      "key": "adminToken",
+      "value": "",
+      "type": "secret",
+      "enabled": true
+    },
+    {
+      "key": "user1Email",
+      "value": "user1@test.com",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "user1Password",
+      "value": "User1234",
+      "type": "secret",
+      "enabled": true
+    },
+    {
+      "key": "user1Token",
+      "value": "",
+      "type": "secret",
+      "enabled": true
+    },
+    {
+      "key": "user2Email",
+      "value": "user2@test.com",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "user2Password",
+      "value": "User1234",
+      "type": "secret",
+      "enabled": true
+    },
+    {
+      "key": "user2Token",
+      "value": "",
+      "type": "secret",
+      "enabled": true
+    },
+    {
+      "key": "beneficiaryId",
+      "value": "",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "cardId",
+      "value": "",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "todayDate",
+      "value": "",
+      "type": "default",
+      "enabled": true
+    }
+  ],
+  "_postman_variable_scope": "environment"
+}

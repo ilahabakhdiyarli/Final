@@ -1,0 +1,6 @@
+{
+  "My Account Icon": { "locatorType": "CSS", "locatorValue": "[data-testid='myAccountIcon']" },
+  "ASOS Email Input": { "locatorType": "ID", "locatorValue": "email" },
+  "Submit Button": { "locatorType": "CSS", "locatorValue": "button[type='submit']" },
+  "Join Button": { "locatorType": "CSS", "locatorValue": "[data-testid='signup-link']" }
+}

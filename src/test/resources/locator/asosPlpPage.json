@@ -1,0 +1,20 @@
+{
+  "Product Cards": { "locatorType": "CSS", "locatorValue": "li.productTile_U0clN" },
+  "Product Card Link": { "locatorType": "CSS", "locatorValue": "a.productLink_KM4PI" },
+  "Filter Button": { "locatorType": "CSS", "locatorValue": "[data-testid='filter-button-desktop']" },
+  "Sort Button": { "locatorType": "CSS", "locatorValue": "[data-testid='sort-button']" },
+  "Load More Button": { "locatorType": "CSS", "locatorValue": "[data-auto-id='loadMoreProducts']" },
+  "Result Count Text": { "locatorType": "CSS", "locatorValue": "p.label_Ph1fi" },
+  "Clear All Filters Button": { "locatorType": "XPATH", "locatorValue": "//button[normalize-space()='Clear all']" },
+  "Brand Filter Button": { "locatorType": "CSS", "locatorValue": "[data-auto-id='brand']" },
+  "Colour Filter Button": { "locatorType": "CSS", "locatorValue": "[data-auto-id='base_colour']" },
+  "Size Filter Button": { "locatorType": "CSS", "locatorValue": "[data-auto-id='size']" },
+  "Price Min Slider": { "locatorType": "CSS", "locatorValue": "[data-testid='minIndicator']" },
+  "Price Max Slider": { "locatorType": "CSS", "locatorValue": "[data-testid='maxIndicator']" },
+  "Size Option EU 36": { "locatorType": "CSS", "locatorValue": "label[for='size_23']" },
+  "Brand Option ASOS DESIGN": { "locatorType": "CSS", "locatorValue": "label[for='brand_53']" },
+  "Colour Option Brown": { "locatorType": "CSS", "locatorValue": "label[for='base_colour_10']" },
+  "Clear Filters Button": { "locatorType": "CSS", "locatorValue": "[data-auto-id='clear']" },
+  "Price Range Filter Button": { "locatorType": "CSS", "locatorValue": "[data-auto-id='currentprice']" },
+  "PLP Product Price": { "locatorType": "CSS", "locatorValue": "span.price_m0bg_" }
+}

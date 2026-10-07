@@ -1,0 +1,12 @@
+{
+  "Sign In Link": { "locatorType": "CSS", "locatorValue": "[data-testid='signin-link']" },
+  "Women Nav Link": { "locatorType": "CSS", "locatorValue": "[data-testid='women-floor']" },
+  "Search Input": { "locatorType": "CSS", "locatorValue": "[data-testid='search-input']" },
+  "Search Button": { "locatorType": "CSS", "locatorValue": "[data-testid='search-button-inline']" },
+  "ASOS Logo": { "locatorType": "CSS", "locatorValue": "[data-testid='asoslogo']" },
+  "Country Selector Button": { "locatorType": "CSS", "locatorValue": "[data-testid='country-selector-btn']" },
+  "Saved Items Link": { "locatorType": "CSS", "locatorValue": "[data-testid='savedItemsIcon']" },
+  "Bag Icon": { "locatorType": "CSS", "locatorValue": "[data-testid='miniBagIcon']" },
+  "Shop In Country Select": { "locatorType": "ID", "locatorValue": "country" },
+  "Update Preferences Button": { "locatorType": "CSS", "locatorValue": "[data-testid='save-country-button']" }
+}

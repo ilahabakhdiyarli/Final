@@ -1,0 +1,5 @@
+{
+  "Saved Item Card": { "locatorType": "CSS", "locatorValue": "div.customerItemsProductTile_UTepY" },
+  "Wishlist Delete Button": { "locatorType": "CSS", "locatorValue": "[aria-label='Delete']" },
+  "Move To Bag Button": { "locatorType": "CSS", "locatorValue": "button.toBagButton_ui6Ul" }
+}

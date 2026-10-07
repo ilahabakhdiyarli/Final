@@ -1,0 +1,11 @@
+{
+  "Bag Item Row": { "locatorType": "TODO_INSPECT", "locatorValue": "TODO_INSPECT_IN_DEVTOOLS" },
+  "Quantity Selector": { "locatorType": "TODO_INSPECT", "locatorValue": "TODO_INSPECT_IN_DEVTOOLS" },
+  "Remove Item Button": { "locatorType": "TODO_INSPECT", "locatorValue": "TODO_INSPECT_IN_DEVTOOLS" },
+  "Promo Code Input": { "locatorType": "TODO_INSPECT", "locatorValue": "TODO_INSPECT_IN_DEVTOOLS" },
+  "Apply Promo Button": { "locatorType": "TODO_INSPECT", "locatorValue": "TODO_INSPECT_IN_DEVTOOLS" },
+  "Promo Error Message": { "locatorType": "TODO_INSPECT", "locatorValue": "TODO_INSPECT_IN_DEVTOOLS" },
+  "Bag Subtotal": { "locatorType": "TODO_INSPECT", "locatorValue": "TODO_INSPECT_IN_DEVTOOLS" },
+  "Empty Bag Message": { "locatorType": "TODO_INSPECT", "locatorValue": "TODO_INSPECT_IN_DEVTOOLS" },
+  "Checkout Button": { "locatorType": "TODO_INSPECT", "locatorValue": "TODO_INSPECT_IN_DEVTOOLS" }
+}

@@ -10,7 +10,7 @@ tags: get, accounts, token
 * Initalize request specification
 * Set base Url to "https://api.anarabbas.com"
 * Add Endpoint "/accounts"
-* Add as a header "Authorization" = "token"
+* Add as a header "Authorization" = "Bearer ${token}"
 * Get request and display respons
 * Status kodunun "200" olmalıdır
 * Json cavabında "[0].id" deyeri boş olmamalıdır
@@ -28,7 +28,7 @@ tags: get, accounts, token
 * Initalize request specification
 * Set base Url to "https://api.anarabbas.com"
 * Add Endpoint "/accounts/acc_001"
-* Add as a header "Authorization" = "token"
+* Add as a header "Authorization" = "Bearer ${token}"
 * Get request and display respons
 * Status kodunun "200" olmalıdır
 * Json cavabında "id" deyeri "acc_001" beraberdir
@@ -40,7 +40,7 @@ tags: get, accounts, history
 * Initalize request specification
 * Set base Url to "https://api.anarabbas.com"
 * Add Endpoint "/accounts/acc_001/balance-history"
-* Add as a header "Authorization" = "token"
+* Add as a header "Authorization" = "Bearer ${token}"
 * Get request and display respons
 * Status kodunun "200" olmalıdır
 * Json cavabında "[0].date" deyeri boş olmamalıdır
@@ -52,7 +52,7 @@ tags: get, accounts, cards
 * Initalize request specification
 * Set base Url to "https://api.anarabbas.com"
 * Add Endpoint "/accounts/acc_002/cards"
-* Add as a header "Authorization" = "token"
+* Add as a header "Authorization" = "Bearer ${token}"
 * Get request and display respons
 * Status kodunun "200" olmalıdır
 * Json cavabında "[0].brand" deyeri boş olmamalıdır
@@ -64,7 +64,7 @@ tags: get, transactions
 * Initalize request specification
 * Set base Url to "https://api.anarabbas.com"
 * Add Endpoint "/transactions?status=completed&type=transfer"
-* Add as a header "Authorization" = "token"
+* Add as a header "Authorization" = "Bearer ${token}"
 * Get request and display respons
 * Status kodunun "200" olmalıdır
 * Json cavabında "[0].id" deyeri boş olmamalıdır
@@ -76,7 +76,7 @@ tags: get, transactions
 * Initalize request specification
 * Set base Url to "https://api.anarabbas.com"
 * Add Endpoint "/transactions/txn_001"
-* Add as a header "Authorization" = "token"
+* Add as a header "Authorization" = "Bearer ${token}"
 * Get request and display respons
 * Status kodunun "200" olmalıdır
 * Json cavabında "id" deyeri "txn_001" beraberdir
@@ -87,7 +87,7 @@ tags: get, transactions, error
 * Initalize request specification
 * Set base Url to "https://api.anarabbas.com"
 * Add Endpoint "/transactions/txn_nonexistent"
-* Add as a header "Authorization" = "token"
+* Add as a header "Authorization" = "Bearer ${token}"
 * Get request and display respons
 * Status kodunun "404" olmalıdır
 
@@ -97,7 +97,7 @@ tags: get, me, accounts
 * Initalize request specification
 * Set base Url to "https://api.anarabbas.com"
 * Add Endpoint "/me/accounts"
-* Add as a header "Authorization" = "token"
+* Add as a header "Authorization" = "Bearer ${token}"
 * Get request and display respons
 * Status kodunun "200" olmalıdır
 * Json cavabında verilen "total" deyeri ededdir
@@ -109,7 +109,7 @@ tags: get, me, accounts
 * Initalize request specification
 * Set base Url to "https://api.anarabbas.com"
 * Add Endpoint "/me/accounts/acc_001"
-* Add as a header "Authorization" = "token"
+* Add as a header "Authorization" = "Bearer ${token}"
 * Get request and display respons
 * Status kodunun "200" olmalıdır
 * Json cavabında "id" deyeri "acc_001" beraberdir
@@ -120,7 +120,7 @@ tags: get, me, accounts, forbidden
 * Initalize request specification
 * Set base Url to "https://api.anarabbas.com"
 * Add Endpoint "/me/accounts/acc_003"
-* Add as a header "Authorization" = "token"
+* Add as a header "Authorization" = "Bearer ${token}"
 * Get request and display respons
 * Status kodunun "403" olmalıdır
 
@@ -130,7 +130,7 @@ tags: get, me, transfers
 * Initalize request specification
 * Set base Url to "https://api.anarabbas.com"
 * Add Endpoint "/me/transfers"
-* Add as a header "Authorization" = "token"
+* Add as a header "Authorization" = "Bearer ${token}"
 * Get request and display respons
 * Status kodunun "200" olmalıdır
 * Json cavabında verilen "total" deyeri ededdir
@@ -141,7 +141,7 @@ tags: get, transfers
 * Initalize request specification
 * Set base Url to "https://api.anarabbas.com"
 * Add Endpoint "/transfers/txn_001"
-* Add as a header "Authorization" = "token"
+* Add as a header "Authorization" = "Bearer ${token}"
 * Get request and display respons
 * Status kodunun "200" olmalıdır
 * Json cavabında "receipt.id" deyeri "txn_001" beraberdir
@@ -153,7 +153,7 @@ tags: get, loans
 * Initalize request specification
 * Set base Url to "https://api.anarabbas.com"
 * Add Endpoint "/loans"
-* Add as a header "Authorization" = "token"
+* Add as a header "Authorization" = "Bearer ${token}"
 * Get request and display respons
 * Status kodunun "200" olmalıdır
 * Json cavabında verilen "total" deyeri ededdir
@@ -164,7 +164,7 @@ tags: get, loans
 * Initalize request specification
 * Set base Url to "https://api.anarabbas.com"
 * Add Endpoint "/loans/loan_002"
-* Add as a header "Authorization" = "token"
+* Add as a header "Authorization" = "Bearer ${token}"
 * Get request and display respons
 * Status kodunun "200" olmalıdır
 * Json cavabında "loan.id" deyeri "loan_002" beraberdir
@@ -176,6 +176,6 @@ tags: get, loans, error
 * Initalize request specification
 * Set base Url to "https://api.anarabbas.com"
 * Add Endpoint "/loans/loan_nonexistent"
-* Add as a header "Authorization" = "token"
+* Add as a header "Authorization" = "Bearer ${token}"
 * Get request and display respons
 * Status kodunun "404" olmalıdır
