@@ -1,0 +1,26 @@
+# ASOS — Axtarış: təhlükəsizlik inputları (SRCH)
+
+Test mühiti: https://www.asos.com
+
+Qeyd: əgər script icra olunub alert açılsa, Selenium-un növbəti addımı "UnhandledAlertException" ilə dayanır və test FAIL olur. Yəni testin keçməsi alert-in açılmadığını göstərir. Input-un axtarış qutusunda dəyişmədən (sadə mətn kimi) qalması da yoxlanılır.
+
+## Axtarış sahəsinə script inject etmə — TC-SRCH-08
+
+* "chrome" brauzeri aç ve keçid et "https://www.asos.com"
+* "Search Input" görsensin deye maksimum "10" saniye gözle
+* "Search Input" elementine "<script>alert(1)</script>" yaz ve Enter düymesine bas
+* Sehifenin tam yüklenmesini gözle
+* "Search Input" görsensin deye maksimum "10" saniye gözle
+* "Search Input" input deyeri "<script>alert(1)</script>" olmalıdır
+* "Result Count Text" görsensin deye maksimum "10" saniye gözle
+* Brauzeri bağla
+
+## SQL-injection formatlı axtarış inputu — TC-SRCH-09
+
+* "chrome" brauzeri aç ve keçid et "https://www.asos.com"
+* "Search Input" görsensin deye maksimum "10" saniye gözle
+* "Search Input" elementine "' OR '1'='1" yaz ve Enter düymesine bas
+* Sehifenin tam yüklenmesini gözle
+* "Search Input" görsensin deye maksimum "10" saniye gözle
+* "Search Input" input deyeri "' OR '1'='1" olmalıdır
+* Brauzeri bağla

@@ -41,6 +41,7 @@ tags: post, bill-payments, positive
 * Json cavabında "currency" deyeri "AZN" beraberdir
 * Json cavabında "cardId" deyeri "${cardId}" beraberdir
 * Json cavabında "balanceAfter" deyeri "49.5" beraberdir
+* Json cavabında "receiptNo" deyeri "^RCP-[0-9]{8}-000001$" regex-ine uyğun olmalıdır
 
 ## 71. Aztelekom — sabit komissiya (0.50)
 tags: post, bill-payments, positive

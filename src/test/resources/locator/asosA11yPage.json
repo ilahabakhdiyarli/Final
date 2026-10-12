@@ -1,0 +1,10 @@
+{
+  "Saved Items Icon With Accessible Name": { "locatorType": "CSS", "locatorValue": "[data-testid='savedItemsIcon'][aria-label]:not([aria-label=''])" },
+  "My Account Icon With Accessible Name": { "locatorType": "CSS", "locatorValue": "[data-testid='myAccountIcon'][aria-label]:not([aria-label=''])" },
+  "Bag Icon With Accessible Name": { "locatorType": "CSS", "locatorValue": "[data-testid='miniBagIcon'][aria-label]:not([aria-label=''])" },
+  "Search Button Icon Labelled By Title": { "locatorType": "CSS", "locatorValue": "[data-testid='search-button-inline'] svg[role='img'][aria-labelledby='search-icon']" },
+  "Search Button Icon Title": { "locatorType": "CSS", "locatorValue": "[data-testid='search-button-inline'] title#search-icon" },
+  "Email Input Label": { "locatorType": "CSS", "locatorValue": "label[for='email']" },
+  "Product Card Image With Alt": { "locatorType": "CSS", "locatorValue": "li.productTile_U0clN img[alt]" },
+  "Product Card Image Without Alt": { "locatorType": "CSS", "locatorValue": "li.productTile_U0clN img:not([alt])" }
+}

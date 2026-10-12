@@ -1,11 +1,15 @@
 {
   "Size Selector": { "locatorType": "ID", "locatorValue": "variantSelector" },
   "Add To Bag Button": { "locatorType": "CSS", "locatorValue": "[data-testid='add-button']" },
-  "Size Guide Link": { "locatorType": "CSS", "locatorValue": "[data-testid='fitAssistantLink']" },
+  "Size Guide Link": { "locatorType": "CSS", "locatorValue": "[data-testid='size-guide-button']" },
+  "Size Guide Iframe": { "locatorType": "CSS", "locatorValue": "[data-testid='size-guide-iframe']" },
+  "Size Guide Modal Title": { "locatorType": "ID", "locatorValue": "modalTitle" },
   "Product Title": { "locatorType": "TAGNAME", "locatorValue": "h1" },
   "Product Price": { "locatorType": "CSS", "locatorValue": "[data-testid='current-price']" },
   "Colour Swatch": { "locatorType": "CSS", "locatorValue": "[data-testid='facetThumbnail']" },
   "Breadcrumb Dresses Link": { "locatorType": "CSS", "locatorValue": "nav[aria-label='breadcrumbs'] a[href*='/women/dresses/cat/?cid=8799']" },
   "Previous Price": { "locatorType": "CSS", "locatorValue": "[data-testid='previous-price']" },
-  "Save Button": { "locatorType": "CSS", "locatorValue": "[data-testid='saveForLater']" }
+  "Save Button": { "locatorType": "CSS", "locatorValue": "[data-testid='saveForLater']" },
+  "Purple Polka Dot Swatch": { "locatorType": "CSS", "locatorValue": "img[alt='Purple Polka Dot']" },
+  "Out Of Stock Size Option": { "locatorType": "CSS", "locatorValue": "#variantSelector option[aria-label$='Out of stock']" }
 }

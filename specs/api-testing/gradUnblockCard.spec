@@ -145,3 +145,56 @@ tags: post, cards, negative
 * Cavabı çap et
 * Status kodunun "404" olmalıdır
 * Json cavabında "code" deyeri "NOT_FOUND" beraberdir
+
+## 64a. Açılmış kartla ödəniş uğurla keçir (AC-4)
+tags: post, cards, positive, bill-payments
+
+* Initalize request specification
+* Set base Url to "https://api.anarabbas.com"
+* Add Endpoint "/auth/login"
+* Add as a header "Content-Type" = "application/json"
+* Add body as text "{\"email\":\"user1@test.com\",\"password\":\"User1234\"}"
+* Post request and display respons
+* Status kodunun "200" olmalıdır
+* Save value of "token" as "token"
+
+* Initalize request specification
+* Set base Url to "https://api.anarabbas.com"
+* Add Endpoint "/cards"
+* Add as a header "Authorization" = "Bearer ${token}"
+* Add as a header "Content-Type" = "application/json"
+* Add body as text "{\"accountId\":\"acc_002\",\"initialAmount\":100}"
+* Post request and display respons
+* Status kodunun "201" olmalıdır
+* Save value of "id" as "cardId"
+
+* Initalize request specification
+* Set base Url to "https://api.anarabbas.com"
+* Add Endpoint "/cards/${cardId}/block"
+* Add as a header "Authorization" = "Bearer ${token}"
+* Add as a header "Content-Type" = "application/json"
+* Add body as text "{\"reason\":\"TEMPORARY\"}"
+* Post request and display respons
+* Status kodunun "200" olmalıdır
+* Json cavabında "status" deyeri "FROZEN" beraberdir
+
+* Initalize request specification
+* Set base Url to "https://api.anarabbas.com"
+* Add Endpoint "/cards/${cardId}/unblock"
+* Add as a header "Authorization" = "Bearer ${token}"
+* Post request and display respons
+* Status kodunun "200" olmalıdır
+* Json cavabında "status" deyeri "ACTIVE" beraberdir
+
+* Initalize request specification
+* Set base Url to "https://api.anarabbas.com"
+* Add Endpoint "/bill-payments"
+* Add as a header "Authorization" = "Bearer ${token}"
+* Add as a header "Content-Type" = "application/json"
+* Add as a header "Idempotency-Key" = "idem-key-064a-unblocked-pay"
+* Add body as text "{\"cardId\":\"${cardId}\",\"billerId\":\"citynet\",\"subscriberNo\":\"CN123456\",\"amount\":50}"
+* Post request and display respons
+* Cavabı çap et
+* Status kodunun "201" olmalıdır
+* Json cavabında "status" deyeri "SUCCESS" beraberdir
+* Json cavabında "balanceAfter" deyeri "49.5" beraberdir

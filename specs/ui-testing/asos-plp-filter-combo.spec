@@ -11,6 +11,11 @@ Test mühiti: https://www.asos.com
 * "Size Filter Button" elementine klik et
 * "Size Option EU 36" görsensin deye maksimum "10" saniye gözle
 * "Size Option EU 36" elementine klik et
+* Sehifenin tam yüklenmesini gözle
+* URL "size:23" içermelidir
+* Sehifeni yenile
+* "Filter Button" görsensin deye maksimum "10" saniye gözle
+* "Filter Button" elementine klik et
 * "Brand Filter Button" görsensin deye maksimum "10" saniye gözle
 * "Brand Filter Button" elementine klik et
 * "Brand Option ASOS DESIGN" görsensin deye maksimum "10" saniye gözle

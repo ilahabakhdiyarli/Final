@@ -1,13 +1,21 @@
 package com.grad.api.epic3;
 
 import com.grad.api.base.BaseApiTest;
+import com.grad.api.models.request.BillPaymentRequest;
+import com.grad.api.models.response.BillPayment;
+import com.grad.api.models.response.Card;
 import com.grad.api.util.Endpoints;
+import com.grad.api.util.Schemas;
 import io.qameta.allure.*;
+import io.restassured.response.Response;
 import org.testng.Assert;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
+import java.math.BigDecimal;
+
 import static io.restassured.RestAssured.given;
+import static io.restassured.module.jsv.JsonSchemaValidator.matchesJsonSchemaInClasspath;
 import static org.hamcrest.Matchers.*;
 
 /**
@@ -19,10 +27,10 @@ import static org.hamcrest.Matchers.*;
  *    bu bölmədən hərfi götürülüb.
  *  - specs/api-testing/gradBillersList.spec (billerId/category/minAmount/maxAmount/fee/subscriberPattern
  *    kataloqu: azerisiq, azersu, azercell, bakcell, citynet, aztelekom).
- *  - postman/GRAD-Final-Project.postman_collection.json — AC-7/AC-8 gap testləri üçün literal
- *    subscriberNo dəyərləri ("551234567", "0501234567") və receiptNo regex-i
- *    (/^RCP-[0-9]{8}-[0-9]{6}$/) bu fayldakı "302-06"/"302-07a/b"/"302-14" testlərindən götürülüb —
- *    heç nə uydurulmayıb, mövcud layihə mənbəyindən hərfi götürülüb.
+ *  - AC-7/AC-8 gap testlərinin literal dəyərləri: "551234567" AC-7-nin mətnindən; receiptNo regex-i
+ *    (/^RCP-[0-9]{8}-[0-9]{6}$/) AC-3-dəki "RCP-YYYYMMDD-000001" formatından; Azercell nömrəsi
+ *    "501234567" real GET /billers cavabındakı subscriberPattern ^(50|51|10)\d{7}$ və
+ *    subscriberFormat nümunəsindən ("məs: 501234567").
  *  - Stil/konvensiya: com.grad.api.epic1.BeneficiaryCreateTest.java (DataProvider ilə BVA, Allure annotasiya
  *    stili) və com.grad.api.epic2.CardCreateTest.java (gap-closing test şərh konvensiyası).
  *
@@ -36,10 +44,14 @@ public class BillPaymentTest extends BaseApiTest {
 
     private static final String RECEIPT_NO_PATTERN = "^RCP-[0-9]{8}-[0-9]{6}$";
 
-    /** amountLiteral JSON-a olduğu kimi (dırnaqsız ədəd və ya "\"10\"" kimi mətn literalı) yerləşdirilir. */
-    private String payBody(String cardId, String billerId, String subscriberNo, String amountLiteral) {
+    private BillPaymentRequest payBody(String cardId, String billerId, String subscriberNo, String amount) {
+        return new BillPaymentRequest(cardId, billerId, subscriberNo, new BigDecimal(amount));
+    }
+
+    /** Yalnız tip/format xətası ssenariləri üçün — amountJsonLiteral JSON-a olduğu kimi yazılır (məs. "\"10\""). */
+    private String rawPayBody(String cardId, String billerId, String subscriberNo, String amountJsonLiteral) {
         return "{\"cardId\":\"" + cardId + "\",\"billerId\":\"" + billerId + "\",\"subscriberNo\":\""
-                + subscriberNo + "\",\"amount\":" + amountLiteral + "}";
+                + subscriberNo + "\",\"amount\":" + amountJsonLiteral + "}";
     }
 
     // ==================== 70-94: gradBillPayments.spec ssenariləri (verbatim) ====================
@@ -49,31 +61,41 @@ public class BillPaymentTest extends BaseApiTest {
     @Story("AC-1")
     public void scenario70_validCityNetPayment_returns201WithAllFields() {
         String token = loginAsUser1();
-        String cardId = createCard(token, "acc_002", 100);
+        BigDecimal initialBalance = new BigDecimal("100");
+        String cardId = createCard(token, "acc_002", initialBalance);
 
-        given(spec).header("Authorization", "Bearer " + token)
+        Response response = authed(token)
                 .header("Idempotency-Key", "idem-key-070-citynet-aaa")
                 .body(payBody(cardId, "citynet", "CN123456", "50"))
                 .when().post(Endpoints.BILL_PAYMENTS)
                 .then().statusCode(201)
-                // YENİ (gap-closing): Location header POST /bill-payments cavabında heç vaxt assert edilmirdi
-                .header("Location", notNullValue())
+                .body(matchesJsonSchemaInClasspath(Schemas.BILL_PAYMENT))
                 .body("status", equalTo("SUCCESS"))
                 .body("biller.id", equalTo("citynet"))
                 .body("subscriberNo", equalTo("CN123456"))
-                .body("amount", equalTo(50))
-                .body("fee", equalTo(0.5f))
-                .body("total", equalTo(50.5f))
                 .body("currency", equalTo("AZN"))
                 .body("cardId", equalTo(cardId))
-                .body("balanceAfter", equalTo(49.5f))
                 // YENİ (gap-closing): receiptNo formatı heç vaxt test edilmirdi
-                .body("receiptNo", matchesPattern(RECEIPT_NO_PATTERN));
+                .body("receiptNo", matchesPattern(RECEIPT_NO_PATTERN))
+                .extract().response();
+
+        BillPayment payment = response.as(BillPayment.class);
+        // AC-1: total = amount + fee; balanceAfter = əvvəlki balans – total (CityNet: 50 + 1% = 50.50)
+        Assert.assertEquals(payment.getAmount().compareTo(new BigDecimal("50")), 0, "amount");
+        Assert.assertEquals(payment.getFee().compareTo(new BigDecimal("0.5")), 0, "fee = 1% (0.50)");
+        Assert.assertEquals(payment.getTotal().compareTo(payment.getAmount().add(payment.getFee())), 0,
+                "total = amount + fee");
+        Assert.assertEquals(payment.getBalanceAfter().compareTo(initialBalance.subtract(payment.getTotal())), 0,
+                "balanceAfter = əvvəlki balans – total");
+        // YENİ (gap-closing): Location header POST /bill-payments cavabında heç vaxt assert edilmirdi
+        Assert.assertEquals(response.header("Location"), "/bill-payments/" + payment.getId(), "Location header");
 
         // YENİ (gap-closing): spentToday heç vaxt assert edilmirdi (GRAD-302 AC-2)
-        given(spec).header("Authorization", "Bearer " + token)
+        authed(token)
                 .when().get(Endpoints.cardById(cardId))
                 .then().statusCode(200)
+                .body(matchesJsonSchemaInClasspath(Schemas.CARD))
+                .body("availableBalance", equalTo(49.5f))
                 .body("spentToday", equalTo(50.5f));
     }
 
@@ -84,11 +106,12 @@ public class BillPaymentTest extends BaseApiTest {
         String token = loginAsUser1();
         String cardId = createCard(token, "acc_002", 100);
 
-        given(spec).header("Authorization", "Bearer " + token)
+        authed(token)
                 .header("Idempotency-Key", "idem-key-071-aztelekom-bbb")
                 .body(payBody(cardId, "aztelekom", "1234567", "10"))
                 .when().post(Endpoints.BILL_PAYMENTS)
                 .then().statusCode(201)
+                .body(matchesJsonSchemaInClasspath(Schemas.BILL_PAYMENT))
                 .body("fee", equalTo(0.5f))
                 .body("total", equalTo(10.5f));
     }
@@ -99,11 +122,10 @@ public class BillPaymentTest extends BaseApiTest {
     public void scenario72_noIdempotencyKeyHeader_returns400() {
         String token = loginAsUser1();
 
-        given(spec).header("Authorization", "Bearer " + token)
+        authed(token)
                 .body(payBody("vcd_fake", "citynet", "CN123456", "50"))
                 .when().post(Endpoints.BILL_PAYMENTS)
-                .then().statusCode(400)
-                .body("code", equalTo("IDEMPOTENCY_KEY_REQUIRED"));
+                .then().spec(error(400, "IDEMPOTENCY_KEY_REQUIRED"));
     }
 
     @Test(description = "73. Idempotency-Key çox qısa")
@@ -112,12 +134,11 @@ public class BillPaymentTest extends BaseApiTest {
     public void scenario73_idempotencyKeyTooShort_returns400() {
         String token = loginAsUser1();
 
-        given(spec).header("Authorization", "Bearer " + token)
+        authed(token)
                 .header("Idempotency-Key", "short")
                 .body(payBody("vcd_fake", "citynet", "CN123456", "50"))
                 .when().post(Endpoints.BILL_PAYMENTS)
-                .then().statusCode(400)
-                .body("code", equalTo("IDEMPOTENCY_KEY_INVALID"));
+                .then().spec(error(400, "IDEMPOTENCY_KEY_INVALID"));
     }
 
     @Test(description = "74. Eyni Idempotency-Key + eyni body — təkrar göndərmə")
@@ -126,29 +147,26 @@ public class BillPaymentTest extends BaseApiTest {
     public void scenario74_sameIdempotencyKeySameBody_replaysWithoutDoubleCharging() {
         String token = loginAsUser1();
 
-        String cardId = given(spec).header("Authorization", "Bearer " + token)
-                .body("{\"accountId\":\"acc_002\",\"initialAmount\":100}")
-                .when().post(Endpoints.CARDS)
-                .then().statusCode(201)
-                .header("Location", notNullValue())
-                .extract().jsonPath().getString("id");
+        String cardId = createCard(token, "acc_002", 100);
 
-        String paymentId1 = given(spec).header("Authorization", "Bearer " + token)
+        String paymentId1 = authed(token)
                 .header("Idempotency-Key", "idem-key-074-replay-ccc")
                 .body(payBody(cardId, "citynet", "CN123456", "50"))
                 .when().post(Endpoints.BILL_PAYMENTS)
                 .then().statusCode(201)
+                .body(matchesJsonSchemaInClasspath(Schemas.BILL_PAYMENT))
                 .extract().jsonPath().getString("id");
 
-        given(spec).header("Authorization", "Bearer " + token)
+        authed(token)
                 .header("Idempotency-Key", "idem-key-074-replay-ccc")
                 .body(payBody(cardId, "citynet", "CN123456", "50"))
                 .when().post(Endpoints.BILL_PAYMENTS)
                 .then().statusCode(200)
+                .body(matchesJsonSchemaInClasspath(Schemas.BILL_PAYMENT))
                 .body("id", equalTo(paymentId1))
                 .header("Idempotent-Replay", equalTo("true"));
 
-        given(spec).header("Authorization", "Bearer " + token)
+        authed(token)
                 .when().get(Endpoints.cardById(cardId))
                 .then().statusCode(200)
                 .body("availableBalance", equalTo(49.5f));
@@ -161,18 +179,18 @@ public class BillPaymentTest extends BaseApiTest {
         String token = loginAsUser1();
         String cardId = createCard(token, "acc_002", 100);
 
-        given(spec).header("Authorization", "Bearer " + token)
+        authed(token)
                 .header("Idempotency-Key", "idem-key-075-conflict-ddd")
                 .body(payBody(cardId, "citynet", "CN123456", "50"))
                 .when().post(Endpoints.BILL_PAYMENTS)
-                .then().statusCode(201);
+                .then().statusCode(201)
+                .body(matchesJsonSchemaInClasspath(Schemas.BILL_PAYMENT));
 
-        given(spec).header("Authorization", "Bearer " + token)
+        authed(token)
                 .header("Idempotency-Key", "idem-key-075-conflict-ddd")
                 .body(payBody(cardId, "citynet", "CN123456", "60"))
                 .when().post(Endpoints.BILL_PAYMENTS)
-                .then().statusCode(409)
-                .body("code", equalTo("IDEMPOTENCY_CONFLICT"));
+                .then().spec(error(409, "IDEMPOTENCY_CONFLICT"));
     }
 
     @Test(description = "76. Mövcud olmayan billerId")
@@ -182,12 +200,11 @@ public class BillPaymentTest extends BaseApiTest {
         String token = loginAsUser1();
         String cardId = createCard(token, "acc_002", 100);
 
-        given(spec).header("Authorization", "Bearer " + token)
+        authed(token)
                 .header("Idempotency-Key", "idem-key-076-nobiller-eee")
                 .body(payBody(cardId, "faketech", "CN123456", "50"))
                 .when().post(Endpoints.BILL_PAYMENTS)
-                .then().statusCode(404)
-                .body("code", equalTo("BILLER_NOT_FOUND"));
+                .then().spec(error(404, "BILLER_NOT_FOUND"));
     }
 
     @Test(description = "77. Mövcud olmayan cardId")
@@ -196,12 +213,11 @@ public class BillPaymentTest extends BaseApiTest {
     public void scenario77_nonExistentCardId_returns404() {
         String token = loginAsUser1();
 
-        given(spec).header("Authorization", "Bearer " + token)
+        authed(token)
                 .header("Idempotency-Key", "idem-key-077-nocard-fff")
                 .body(payBody("vcd_notreal", "citynet", "CN123456", "50"))
                 .when().post(Endpoints.BILL_PAYMENTS)
-                .then().statusCode(404)
-                .body("code", equalTo("CARD_NOT_FOUND"));
+                .then().spec(error(404, "CARD_NOT_FOUND"));
     }
 
     @Test(description = "78. Token yoxdur/etibarsızdır")
@@ -212,7 +228,7 @@ public class BillPaymentTest extends BaseApiTest {
                 .header("Idempotency-Key", "idem-key-078-notoken-ggg")
                 .body(payBody("vcd_fake", "citynet", "CN123456", "50"))
                 .when().post(Endpoints.BILL_PAYMENTS)
-                .then().statusCode(401);
+                .then().spec(unauthorized());
     }
 
     @Test(description = "79. amount mətn kimi göndərilir")
@@ -222,12 +238,11 @@ public class BillPaymentTest extends BaseApiTest {
         String token = loginAsUser1();
         String cardId = createCard(token, "acc_002", 100);
 
-        given(spec).header("Authorization", "Bearer " + token)
+        authed(token)
                 .header("Idempotency-Key", "idem-key-079-textamount-hhh")
-                .body(payBody(cardId, "citynet", "CN123456", "\"10\""))
+                .body(rawPayBody(cardId, "citynet", "CN123456", "\"10\""))
                 .when().post(Endpoints.BILL_PAYMENTS)
-                .then().statusCode(400)
-                .body("code", equalTo("VALIDATION_ERROR"));
+                .then().spec(validationError("amount"));
     }
 
     @Test(description = "80. Subscriber format uyğunsuzluğu — Azərişıq")
@@ -237,12 +252,11 @@ public class BillPaymentTest extends BaseApiTest {
         String token = loginAsUser1();
         String cardId = createCard(token, "acc_002", 100);
 
-        given(spec).header("Authorization", "Bearer " + token)
+        authed(token)
                 .header("Idempotency-Key", "idem-key-080-badsub-iii")
                 .body(payBody(cardId, "azerisiq", "123", "50"))
                 .when().post(Endpoints.BILL_PAYMENTS)
-                .then().statusCode(422)
-                .body("code", equalTo("INVALID_SUBSCRIBER"));
+                .then().spec(error(422, "INVALID_SUBSCRIBER"));
     }
 
     @DataProvider(name = "cityNetFeeBoundary")
@@ -264,11 +278,12 @@ public class BillPaymentTest extends BaseApiTest {
         String token = loginAsUser1();
         String cardId = createCard(token, "acc_002", cardInitialAmount);
 
-        given(spec).header("Authorization", "Bearer " + token)
+        authed(token)
                 .header("Idempotency-Key", idemKey)
                 .body(payBody(cardId, "citynet", "CN123456", amountLiteral))
                 .when().post(Endpoints.BILL_PAYMENTS)
                 .then().statusCode(201)
+                .body(matchesJsonSchemaInClasspath(Schemas.BILL_PAYMENT))
                 .body("fee", equalTo(expectedFee))
                 .body("total", equalTo(expectedTotal));
     }
@@ -289,12 +304,11 @@ public class BillPaymentTest extends BaseApiTest {
         String token = loginAsUser1();
         String cardId = createCard(token, "acc_002", cardInitialAmount);
 
-        given(spec).header("Authorization", "Bearer " + token)
+        authed(token)
                 .header("Idempotency-Key", idemKey)
                 .body(payBody(cardId, "citynet", "CN123456", amountLiteral))
                 .when().post(Endpoints.BILL_PAYMENTS)
-                .then().statusCode(422)
-                .body("code", equalTo("AMOUNT_OUT_OF_RANGE"));
+                .then().spec(error(422, "AMOUNT_OUT_OF_RANGE"));
     }
 
     @Test(description = "87. Per-transaction limit (300) aşılır")
@@ -304,12 +318,11 @@ public class BillPaymentTest extends BaseApiTest {
         String token = loginAsUser1();
         String cardId = createCard(token, "acc_002", 1000);
 
-        given(spec).header("Authorization", "Bearer " + token)
+        authed(token)
                 .header("Idempotency-Key", "idem-key-087-perlimit-ppp")
                 .body(payBody(cardId, "azerisiq", "1234567890", "300.01"))
                 .when().post(Endpoints.BILL_PAYMENTS)
-                .then().statusCode(422)
-                .body("code", equalTo("PER_TRANSACTION_LIMIT"));
+                .then().spec(error(422, "PER_TRANSACTION_LIMIT"));
     }
 
     @Test(description = "88. Per-transaction limit sərhədi — 300 dəqiq (keçir)")
@@ -319,11 +332,12 @@ public class BillPaymentTest extends BaseApiTest {
         String token = loginAsUser1();
         String cardId = createCard(token, "acc_002", 1000);
 
-        given(spec).header("Authorization", "Bearer " + token)
+        authed(token)
                 .header("Idempotency-Key", "idem-key-088-perlimit300-qqq")
                 .body(payBody(cardId, "azerisiq", "1234567890", "300"))
                 .when().post(Endpoints.BILL_PAYMENTS)
                 .then().statusCode(201)
+                .body(matchesJsonSchemaInClasspath(Schemas.BILL_PAYMENT))
                 .body("total", equalTo(300));
     }
 
@@ -334,24 +348,25 @@ public class BillPaymentTest extends BaseApiTest {
         String token = loginAsUser1();
         String cardId = createCard(token, "acc_002", 1000);
 
-        given(spec).header("Authorization", "Bearer " + token)
+        authed(token)
                 .header("Idempotency-Key", "idem-key-089-daily1-rrr")
                 .body(payBody(cardId, "azerisiq", "1234567890", "300"))
                 .when().post(Endpoints.BILL_PAYMENTS)
-                .then().statusCode(201);
+                .then().statusCode(201)
+                .body(matchesJsonSchemaInClasspath(Schemas.BILL_PAYMENT));
 
-        given(spec).header("Authorization", "Bearer " + token)
+        authed(token)
                 .header("Idempotency-Key", "idem-key-089-daily2-sss")
                 .body(payBody(cardId, "azerisiq", "1234567890", "200"))
                 .when().post(Endpoints.BILL_PAYMENTS)
-                .then().statusCode(201);
+                .then().statusCode(201)
+                .body(matchesJsonSchemaInClasspath(Schemas.BILL_PAYMENT));
 
-        given(spec).header("Authorization", "Bearer " + token)
+        authed(token)
                 .header("Idempotency-Key", "idem-key-089-daily3-ttt")
                 .body(payBody(cardId, "azerisiq", "1234567890", "1"))
                 .when().post(Endpoints.BILL_PAYMENTS)
-                .then().statusCode(422)
-                .body("code", equalTo("DAILY_LIMIT_EXCEEDED"))
+                .then().spec(error(422, "DAILY_LIMIT_EXCEEDED"))
                 // YENİ (gap-closing): remaining sahəsi heç vaxt assert edilmirdi
                 .body("remaining", equalTo(0));
     }
@@ -363,12 +378,11 @@ public class BillPaymentTest extends BaseApiTest {
         String token = loginAsUser1();
         String cardId = createCard(token, "acc_002", 49.50);
 
-        given(spec).header("Authorization", "Bearer " + token)
+        authed(token)
                 .header("Idempotency-Key", "idem-key-090-insuff-uuu")
                 .body(payBody(cardId, "azerisiq", "1234567890", "49.51"))
                 .when().post(Endpoints.BILL_PAYMENTS)
-                .then().statusCode(422)
-                .body("code", equalTo("INSUFFICIENT_FUNDS"));
+                .then().spec(error(422, "INSUFFICIENT_FUNDS"));
     }
 
     @Test(description = "91. Insufficient funds sərhədi — balansın tam məbləği (keçir)")
@@ -378,11 +392,12 @@ public class BillPaymentTest extends BaseApiTest {
         String token = loginAsUser1();
         String cardId = createCard(token, "acc_002", 49.50);
 
-        given(spec).header("Authorization", "Bearer " + token)
+        authed(token)
                 .header("Idempotency-Key", "idem-key-091-exact-vvv")
                 .body(payBody(cardId, "azerisiq", "1234567890", "49.50"))
                 .when().post(Endpoints.BILL_PAYMENTS)
                 .then().statusCode(201)
+                .body(matchesJsonSchemaInClasspath(Schemas.BILL_PAYMENT))
                 .body("balanceAfter", equalTo(0));
     }
 
@@ -393,17 +408,13 @@ public class BillPaymentTest extends BaseApiTest {
         String token = loginAsUser1();
         String cardId = createCard(token, "acc_002", 100);
 
-        given(spec).header("Authorization", "Bearer " + token)
-                .body("{\"reason\":\"TEMPORARY\"}")
-                .when().post(Endpoints.cardBlock(cardId))
-                .then().statusCode(200);
+        blockCard(token, cardId, "TEMPORARY");
 
-        given(spec).header("Authorization", "Bearer " + token)
+        authed(token)
                 .header("Idempotency-Key", "idem-key-092-frozen-www")
                 .body(payBody(cardId, "azerisiq", "1234567890", "50"))
                 .when().post(Endpoints.BILL_PAYMENTS)
-                .then().statusCode(422)
-                .body("code", equalTo("CARD_NOT_ACTIVE"));
+                .then().spec(error(422, "CARD_NOT_ACTIVE"));
     }
 
     @Test(description = "93. BLOCKED kartla ödəniş cəhdi")
@@ -413,17 +424,13 @@ public class BillPaymentTest extends BaseApiTest {
         String token = loginAsUser1();
         String cardId = createCard(token, "acc_002", 100);
 
-        given(spec).header("Authorization", "Bearer " + token)
-                .body("{\"reason\":\"LOST\"}")
-                .when().post(Endpoints.cardBlock(cardId))
-                .then().statusCode(200);
+        blockCard(token, cardId, "LOST");
 
-        given(spec).header("Authorization", "Bearer " + token)
+        authed(token)
                 .header("Idempotency-Key", "idem-key-093-blocked-xxx")
                 .body(payBody(cardId, "azerisiq", "1234567890", "50"))
                 .when().post(Endpoints.BILL_PAYMENTS)
-                .then().statusCode(422)
-                .body("code", equalTo("CARD_NOT_ACTIVE"));
+                .then().spec(error(422, "CARD_NOT_ACTIVE"));
     }
 
     @Test(description = "94. USD kartla ödəniş — CURRENCY_NOT_SUPPORTED (AC-14)")
@@ -432,19 +439,15 @@ public class BillPaymentTest extends BaseApiTest {
     public void scenario94_usdCardPayment_returns422CurrencyNotSupported() {
         String token = loginAsUser2();
 
-        String cardId = given(spec).header("Authorization", "Bearer " + token)
-                .body("{\"accountId\":\"acc_003\",\"initialAmount\":100}")
-                .when().post(Endpoints.CARDS)
-                .then().statusCode(201)
-                .body("currency", equalTo("USD"))
-                .extract().jsonPath().getString("id");
+        Card usdCard = createCardEntity(token, "acc_003", 100);
+        Assert.assertEquals(usdCard.getCurrency(), "USD", "user2-nin acc_003 hesabı USD-dir");
+        String cardId = usdCard.getId();
 
-        given(spec).header("Authorization", "Bearer " + token)
+        authed(token)
                 .header("Idempotency-Key", "idem-key-094-usdcurrency-aaa")
                 .body(payBody(cardId, "azerisiq", "1234567890", "50"))
                 .when().post(Endpoints.BILL_PAYMENTS)
-                .then().statusCode(422)
-                .body("code", equalTo("CURRENCY_NOT_SUPPORTED"));
+                .then().spec(error(422, "CURRENCY_NOT_SUPPORTED"));
     }
 
     // ==================== YENİ (gap-closing) testlər — GRAD-AC-Reference.md əsasında ====================
@@ -453,8 +456,7 @@ public class BillPaymentTest extends BaseApiTest {
      * YENİ (gap-closing) test — mövcud Gauge suite-də receiptNo-nun ardıcıllığı heç vaxt yoxlanılmayıb.
      * Mənbə sətiri: "- **AC-3** Given Sandbox-da ilk ödəniş When Cavab yoxlanır Then receiptNo
      * RCP-YYYYMMDD-000001; hər növbəti ödəniş +1" (GRAD-AC-Reference.md, GRAD-302 bölməsi).
-     * Regex /^RCP-[0-9]{8}-[0-9]{6}$/ postman/GRAD-Final-Project.postman_collection.json-dakı
-     * "302-14 receiptNo sequential format" testindən götürülüb.
+     * Regex /^RCP-[0-9]{8}-[0-9]{6}$/ AC-3-dəki "RCP-YYYYMMDD-000001" formatından qurulub.
      */
     @Test(description = "YENİ (gap-closing): receiptNo ardıcıl ödənişlərdə +1 artır (AC-3)")
     @Severity(SeverityLevel.NORMAL)
@@ -463,19 +465,21 @@ public class BillPaymentTest extends BaseApiTest {
         String token = loginAsUser1();
         String cardId = createCard(token, "acc_002", 100);
 
-        String receiptNo1 = given(spec).header("Authorization", "Bearer " + token)
+        String receiptNo1 = authed(token)
                 .header("Idempotency-Key", "idem-key-gap-receipt1-" + System.currentTimeMillis())
                 .body(payBody(cardId, "citynet", "CN123456", "5"))
                 .when().post(Endpoints.BILL_PAYMENTS)
                 .then().statusCode(201)
+                .body(matchesJsonSchemaInClasspath(Schemas.BILL_PAYMENT))
                 .body("receiptNo", matchesPattern(RECEIPT_NO_PATTERN))
                 .extract().jsonPath().getString("receiptNo");
 
-        String receiptNo2 = given(spec).header("Authorization", "Bearer " + token)
+        String receiptNo2 = authed(token)
                 .header("Idempotency-Key", "idem-key-gap-receipt2-" + System.currentTimeMillis())
                 .body(payBody(cardId, "citynet", "CN123456", "5"))
                 .when().post(Endpoints.BILL_PAYMENTS)
                 .then().statusCode(201)
+                .body(matchesJsonSchemaInClasspath(Schemas.BILL_PAYMENT))
                 .body("receiptNo", matchesPattern(RECEIPT_NO_PATTERN))
                 .extract().jsonPath().getString("receiptNo");
 
@@ -489,8 +493,7 @@ public class BillPaymentTest extends BaseApiTest {
      * Mənbə sətiri: "- **AC-7** Given Azercell-ə 551234567 (Bakcell nömrəsi) When Sorğu icra olunur
      * Then 422 INVALID_SUBSCRIBER" (GRAD-AC-Reference.md, GRAD-302 bölməsi). Mövcud gradBillPayments.spec
      * ssenari #80 isə Azərişıq+"123" kombinasiyasını işlədir — AC-7-nin dəqiq mətni ilə üst-üstə düşmür.
-     * subscriberNo="551234567" postman/GRAD-Final-Project.postman_collection.json-dakı "302-06" testindən
-     * götürülüb (eyni literal dəyər).
+     * subscriberNo="551234567" AC-7-nin mətnindəki literal dəyərdir.
      */
     @Test(description = "YENİ: AC-7-nin dəqiq mətni ilə (mövcud Gauge testi fərqli kombinasiya işlədir)")
     @Severity(SeverityLevel.NORMAL)
@@ -499,12 +502,11 @@ public class BillPaymentTest extends BaseApiTest {
         String token = loginAsUser1();
         String cardId = createCard(token, "acc_002", 100);
 
-        given(spec).header("Authorization", "Bearer " + token)
+        authed(token)
                 .header("Idempotency-Key", "idem-key-ac7-azercell-bakcellno-" + System.currentTimeMillis())
                 .body(payBody(cardId, "azercell", "551234567", "10"))
                 .when().post(Endpoints.BILL_PAYMENTS)
-                .then().statusCode(422)
-                .body("code", equalTo("INVALID_SUBSCRIBER"));
+                .then().spec(error(422, "INVALID_SUBSCRIBER"));
     }
 
     @DataProvider(name = "azercellAmountBoundaryExact")
@@ -523,8 +525,7 @@ public class BillPaymentTest extends BaseApiTest {
      * AMOUNT_OUT_OF_RANGE; 0.50 və 200.00 qəbul olunur" (GRAD-AC-Reference.md, GRAD-302 bölməsi).
      * Mövcud gradBillPayments.spec ssenari #85/#86 bu sərhədi CityNet (4.99/150.01) dəyərləri ilə
      * yoxlayır — AC-8-in hərfi mətni Azercell üçündür.
-     * DÜZƏLİŞ: subscriberNo əvvəlcə "0501234567" idi (postman/GRAD-Final-Project.postman_collection.json-dakı
-     * "302-07a/b" testlərindən götürülmüşdü) — bu dəyər Azercell-in təsdiqlənmiş formatına
+     * DÜZƏLİŞ (TD-03): subscriberNo əvvəlcə "0501234567" idi — bu dəyər Azercell-in təsdiqlənmiş formatına
      * (^(50|51|10)\d{7}, yəni 9 rəqəm, prefiks 50/51/10) uyğun deyil (10 rəqəm, "05" ilə başlayır),
      * ona görə API AMOUNT_OUT_OF_RANGE əvəzinə INVALID_SUBSCRIBER qaytarırdı (test kodu bug-ı, API bug-ı deyil).
      * "501234567" (9 rəqəm, prefiks "50") formata uyğun real Azercell nömrəsidir.
@@ -537,15 +538,50 @@ public class BillPaymentTest extends BaseApiTest {
         String token = loginAsUser1();
         String cardId = createCard(token, "acc_002", 1000);
 
-        var response = given(spec).header("Authorization", "Bearer " + token)
+        var then = authed(token)
                 .header("Idempotency-Key", "idem-key-ac8-azercell-" + amountLiteral.replace(".", "")
                         + "-" + System.currentTimeMillis())
                 .body(payBody(cardId, "azercell", "501234567", amountLiteral))
                 .when().post(Endpoints.BILL_PAYMENTS)
-                .then().statusCode(expectedStatus);
+                .then();
 
         if (expectedCode != null) {
-            response.body("code", equalTo(expectedCode));
+            then.spec(error(expectedStatus, expectedCode));
+        } else {
+            then.statusCode(expectedStatus).body(matchesJsonSchemaInClasspath(Schemas.BILL_PAYMENT));
         }
+    }
+
+    @DataProvider(name = "invalidMoneyAmount")
+    public Object[][] invalidMoneyAmount() {
+        return new Object[][]{
+                {"10.555"}, // 3 onluq — "Pul sahələri number, maksimum 2 onluq"
+                {"0"},      // amount > 0 olmalıdır
+                {"-5"},     // mənfi məbləğ
+        };
+    }
+
+    /**
+     * YENİ (GAP-03): pul sahəsinin formatı — amount (>0, max 2 onluq) GRAD-302 parametr qaydasıdır və
+     * yoxlama ardıcıllığında "sahə validasiyası" mərhələsinə düşür (AMOUNT_OUT_OF_RANGE-dən əvvəl),
+     * ona görə 400 VALIDATION_ERROR (field: amount) gözlənilir. Mənbə: GRAD-AC-Reference.md, GRAD-302
+     * "Parameters" və "Yoxlama ardıcıllığı" + "Ümumi texniki qaydalar" (pul sahələri maksimum 2 onluq).
+     * Dəyərlər CityNet aralığı (5–150) daxilindədir ki, nəticəyə yalnız format qaydası təsir etsin
+     * (0 və -5 istisna — onlar həm də aralıqdan kənardır, lakin sahə validasiyası daha əvvəl icra olunur).
+     */
+    @Test(dataProvider = "invalidMoneyAmount",
+            description = "YENİ (GAP-03): amount 10.555 / 0 / -5 -> 400 VALIDATION_ERROR (field: amount)")
+    @Severity(SeverityLevel.NORMAL)
+    @Story("AC-15")
+    public void gap03_invalidMoneyAmount_returns400ValidationError(String amount) {
+        String token = loginAsUser1();
+        String cardId = createCard(token, "acc_002", 100);
+
+        authed(token)
+                .header("Idempotency-Key", "idem-key-gap03-" + amount.replace(".", "").replace("-", "m")
+                        + "-" + System.currentTimeMillis())
+                .body(payBody(cardId, "citynet", "CN123456", amount))
+                .when().post(Endpoints.BILL_PAYMENTS)
+                .then().spec(validationError("amount"));
     }
 }

@@ -1,5 +1,4 @@
 {
-  "id": "5f0c2b7a-9d4e-4a8a-8f0a-3b2c9e7a1d6f",
   "name": "GRAD API Suite — Sandbox",
   "values": [
     {
@@ -17,13 +16,13 @@
     {
       "key": "adminPassword",
       "value": "",
-      "type": "secret",
+      "type": "default",
       "enabled": true
     },
     {
       "key": "adminToken",
       "value": "",
-      "type": "secret",
+      "type": "default",
       "enabled": true
     },
     {
@@ -35,13 +34,13 @@
     {
       "key": "user1Password",
       "value": "User1234",
-      "type": "secret",
+      "type": "default",
       "enabled": true
     },
     {
       "key": "user1Token",
       "value": "",
-      "type": "secret",
+      "type": "default",
       "enabled": true
     },
     {
@@ -53,30 +52,276 @@
     {
       "key": "user2Password",
       "value": "User1234",
-      "type": "secret",
+      "type": "default",
       "enabled": true
     },
     {
       "key": "user2Token",
       "value": "",
-      "type": "secret",
+      "type": "default",
       "enabled": true
     },
     {
       "key": "beneficiaryId",
-      "value": "",
+      "value": "ben_d0v7mzup",
       "type": "default",
       "enabled": true
     },
     {
       "key": "cardId",
-      "value": "",
+      "value": "vcd_2yyvlr2t",
       "type": "default",
       "enabled": true
     },
     {
       "key": "todayDate",
-      "value": "",
+      "value": "2026-10-07",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "keepId",
+      "value": "ben_x7j38ql8",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "deleteId",
+      "value": "ben_prhiul2w",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "user1BenId",
+      "value": "ben_sdzqza6h",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "idemKey074",
+      "value": "idem-key-074-replay-1791360571148-phtaxw9h2za",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "paymentId1",
+      "value": "bpm_h1cf0n2d",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "idemKey075",
+      "value": "idem-key-075-conflict-1791360572269-4xoi6tg9zmt",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "usdCardId",
+      "value": "vcd_x8lvd9ia",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "idemKey70b",
+      "value": "idem-key-070-citynet-1791360568896-t5pufw58zoa",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "idemKey71b",
+      "value": "idem-key-071-aztelekom-1791360569818-r9u7ob2sa79",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "idemKey76b",
+      "value": "idem-key-076-nobiller-1791360573393-70bmrbbkwnf",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "idemKey77",
+      "value": "idem-key-077-nocard-1791360573548-eadz6t58qze",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "idemKey78",
+      "value": "idem-key-078-notoken-1791360573695-5w55e68hlru",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "idemKey79b",
+      "value": "idem-key-079-textamount-1791360574648-vz08zv9it9e",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "idemKey80b",
+      "value": "idem-key-080-badsub-1791360575662-pm1k2o4hd2g",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "idemKey81b",
+      "value": "idem-key-081-fee5-1791360576644-9aq3am9xnu",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "idemKey82b",
+      "value": "idem-key-082-fee20-1791360577605-cw5fll9uvbt",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "idemKey83b",
+      "value": "idem-key-083-fee21-1791360578627-akp2c7bcxpd",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "idemKey84b",
+      "value": "idem-key-084-fee150-1791360579556-gyh88gra05",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "idemKey85b",
+      "value": "idem-key-085-toolow-1791360580681-1i1znpoyr6z",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "idemKey86b",
+      "value": "idem-key-086-toohigh-1791360581706-8p8f4idktab",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "idemKey87b",
+      "value": "idem-key-087-perlimit-1791360582680-v5t861eygih",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "idemKey88b",
+      "value": "idem-key-088-perlimit300-1791360583618-28qdlh6cf4k",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "idemKey89b",
+      "value": "idem-key-089-daily1-1791360584670-is79w4oks1c",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "idemKey89c",
+      "value": "idem-key-089-daily2-1791360584826-w5xcns2qgpg",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "idemKey89d",
+      "value": "idem-key-089-daily3-1791360584970-rsb7b8bsp4",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "idemKey90b",
+      "value": "idem-key-090-insuff-1791360585909-aaz6y7971tb",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "idemKey91b",
+      "value": "idem-key-091-exact-1791360586832-tocobcuo5b",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "idemKey94c",
+      "value": "idem-key-094-usdcurrency-1791360590203-zqtawfl2aeg",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "idemKey1b",
+      "value": "idem-key-p01-default-1791360652861-s34xctkkx7f",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "idemKey2b",
+      "value": "idem-key-p02-018-1791360653992-rhbocnvki1",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "idemKey3b",
+      "value": "idem-key-p03-001-1791360657048-vd4hcgi7hse",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "idemKey3c",
+      "value": "idem-key-p03-002-1791360657213-lul7rbvsyrr",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "idemKey11b",
+      "value": "idem-key-p11-today-1791360659276-681skxgmdw4",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "idemKey12b",
+      "value": "idem-key-p12-citynet-1791360660549-hqjkqg1kdch",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "idemKey12c",
+      "value": "idem-key-p12-azerisiq-1791360660705-klewhuoupn9",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "idemKey51c",
+      "value": "idem-key-51c-premidnight-1791402587084-kkb2tskkbf",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "spentTodayBeforeMidnight",
+      "value": "20.2",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "idemKey14a",
+      "value": "idem-key-14a-postmidnight-1791403311734-dbkma1y0qqd",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "midnightPaymentId",
+      "value": "bpm_mzdndz3v",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "bakuTodayDate",
+      "value": "2026-10-08",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "bakuYesterdayDate",
+      "value": "2026-10-07",
       "type": "default",
       "enabled": true
     }

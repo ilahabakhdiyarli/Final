@@ -1,12 +1,17 @@
 package com.grad.api.epic1;
 
 import com.grad.api.base.BaseApiTest;
+import com.grad.api.models.request.BeneficiaryRequest;
+import com.grad.api.models.response.BeneficiaryList;
 import com.grad.api.util.Endpoints;
+import com.grad.api.util.Schemas;
 import io.qameta.allure.*;
 import org.testng.annotations.Test;
 
 import static io.restassured.RestAssured.given;
+import static io.restassured.module.jsv.JsonSchemaValidator.matchesJsonSchemaInClasspath;
 import static org.hamcrest.Matchers.*;
+import static org.testng.Assert.assertEquals;
 
 /**
  * GRAD-102 — GET /beneficiaries (Alıcılar siyahısı — axtarış, filtr, sıralama).
@@ -16,8 +21,8 @@ import static org.hamcrest.Matchers.*;
 @Feature("GRAD-102: Alıcıları siyahılama/axtarış")
 public class BeneficiaryListTest extends BaseApiTest {
 
-    private String body(String fullName, String iban, String nickname, String currency) {
-        return "{\"fullName\":\"" + fullName + "\",\"iban\":\"" + iban + "\",\"nickname\":\"" + nickname + "\",\"currency\":\"" + currency + "\"}";
+    private BeneficiaryRequest body(String fullName, String iban, String nickname, String currency) {
+        return new BeneficiaryRequest(fullName, iban, currency, nickname);
     }
 
     @Test(description = "AC-1: Parametrsiz sorğu -> 200; total = items.length; ən yeni əlavə edilən birinci gəlir")
@@ -25,15 +30,19 @@ public class BeneficiaryListTest extends BaseApiTest {
     @Story("AC-1")
     public void ac1_noParams_defaultSortNewestFirst() {
         String token = loginAsUser1();
-        createBeneficiary(token, body("Tahir Aliyev", "AZ41NABZ00000000137010009441", "Birinci", "AZN"));
-        createBeneficiary(token, body("Samir Nasirov", "AZ42NABZ00000000137010009442", "Ikinci", "AZN"));
+        String firstId = createBeneficiary(token, body("Tahir Aliyev", "AZ41NABZ00000000137010009441", "Birinci", "AZN"));
+        String secondId = createBeneficiary(token, body("Samir Nasirov", "AZ42NABZ00000000137010009442", "Ikinci", "AZN"));
 
-        given(spec).header("Authorization", "Bearer " + token)
+        BeneficiaryList list = authed(token)
                 .when().get(Endpoints.BENEFICIARIES)
                 .then().statusCode(200)
-                .body("total", equalTo(2))
-                .body("items.size()", equalTo(2))
-                .body("items[0].nickname", equalTo("Ikinci"));
+                .body(matchesJsonSchemaInClasspath(Schemas.BENEFICIARY_LIST))
+                .extract().as(BeneficiaryList.class);
+
+        assertEquals(list.getTotal(), 2);
+        assertEquals(list.getTotal(), list.getItems().size(), "total = items.length");
+        assertEquals(list.getItems().get(0).getId(), secondId, "ən yeni əlavə edilən birinci gəlməlidir");
+        assertEquals(list.getItems().get(1).getId(), firstId);
     }
 
     @Test(description = "AC-2: sort=fullName&order=asc -> adlar əlifba sırası ilə düzülür")
@@ -45,11 +54,12 @@ public class BeneficiaryListTest extends BaseApiTest {
         createBeneficiary(token, body("Araz Huseynov", "AZ52NABZ00000000137010009552", "SortTest2", "AZN"));
         createBeneficiary(token, body("Baba Mammadov", "AZ53NABZ00000000137010009553", "SortTest3", "AZN"));
 
-        given(spec).header("Authorization", "Bearer " + token)
+        authed(token)
                 .queryParam("sort", "fullName")
                 .queryParam("order", "asc")
                 .when().get(Endpoints.BENEFICIARIES)
                 .then().statusCode(200)
+                .body(matchesJsonSchemaInClasspath(Schemas.BENEFICIARY_LIST))
                 .body("items.fullName", contains("Araz Huseynov", "Baba Mammadov", "Cavid Aliyev"));
     }
 
@@ -61,10 +71,11 @@ public class BeneficiaryListTest extends BaseApiTest {
         createBeneficiary(token, body("Kamran Huseynov", "AZ11NABZ00000000137010009111", "USDTest1", "USD"));
         createBeneficiary(token, body("Elvin Qasimov", "AZ22NABZ00000000137010009222", "AZNTest1", "AZN"));
 
-        given(spec).header("Authorization", "Bearer " + token)
+        authed(token)
                 .queryParam("currency", "USD")
                 .when().get(Endpoints.BENEFICIARIES)
                 .then().statusCode(200)
+                .body(matchesJsonSchemaInClasspath(Schemas.BENEFICIARY_LIST))
                 .body("total", equalTo(1))
                 .body("items.size()", equalTo(1))
                 .body("items.currency", everyItem(equalTo("USD")));
@@ -77,19 +88,14 @@ public class BeneficiaryListTest extends BaseApiTest {
         String token = loginAsUser1();
         createBeneficiary(token, body("Nigar Əliyeva", "AZ61NABZ00000000137010009661", "NigarTest", "AZN"));
 
-        given(spec).header("Authorization", "Bearer " + token)
-                .queryParam("q", "NİGAR")
-                .when().get(Endpoints.BENEFICIARIES)
-                .then().statusCode(200)
-                .body("items.size()", greaterThanOrEqualTo(1))
-                .body("items[0].fullName", containsString("Nigar"));
-
-        given(spec).header("Authorization", "Bearer " + token)
-                .queryParam("q", "NIGAR")
-                .when().get(Endpoints.BENEFICIARIES)
-                .then().statusCode(200)
-                .body("items.size()", greaterThanOrEqualTo(1))
-                .body("items[0].fullName", containsString("Nigar"));
+        for (String q : new String[]{"NİGAR", "NIGAR"}) {
+            authed(token)
+                    .queryParam("q", q)
+                    .when().get(Endpoints.BENEFICIARIES)
+                    .then().statusCode(200)
+                    .body(matchesJsonSchemaInClasspath(Schemas.BENEFICIARY_LIST))
+                    .body("items.fullName", hasItem("Nigar Əliyeva"));
+        }
     }
 
     @Test(description = "AC-5: q ləqəbin bir hissəsidir -> ləqəbə görə də tapılır")
@@ -99,7 +105,7 @@ public class BeneficiaryListTest extends BaseApiTest {
         String token = loginAsUser1();
         createBeneficiary(token, body("Anar Mammadov", "AZ33NABZ00000000137010009333", "Anam", "AZN"));
 
-        given(spec).header("Authorization", "Bearer " + token)
+        authed(token)
                 .queryParam("q", "Ana")
                 .when().get(Endpoints.BENEFICIARIES)
                 .then().statusCode(200)
@@ -107,17 +113,16 @@ public class BeneficiaryListTest extends BaseApiTest {
                 .body("items[0].nickname", containsString("Ana"));
     }
 
-    @Test(description = "AC-6: q=a (1 simvol) -> 400 VALIDATION_ERROR, details[0].field=q")
+    @Test(description = "AC-6: q=a (1 simvol) -> 400 VALIDATION_ERROR, field: q")
     @Severity(SeverityLevel.NORMAL)
     @Story("AC-6")
     public void ac6_qTooShort_returns400ValidationError() {
         String token = loginAsUser1();
 
-        given(spec).header("Authorization", "Bearer " + token)
+        authed(token)
                 .queryParam("q", "a")
                 .when().get(Endpoints.BENEFICIARIES)
-                .then().statusCode(400)
-                .body("code", equalTo("VALIDATION_ERROR"))
+                .then().spec(validationError("q"))
                 .body("details[0].field", equalTo("q"));
     }
 
@@ -127,12 +132,13 @@ public class BeneficiaryListTest extends BaseApiTest {
     public void ac7_noResults_returns200EmptyList() {
         String token = loginAsUser1();
 
-        given(spec).header("Authorization", "Bearer " + token)
+        authed(token)
                 .queryParam("q", "Zzzznonexistent")
                 .when().get(Endpoints.BENEFICIARIES)
                 .then().statusCode(200)
+                .body(matchesJsonSchemaInClasspath(Schemas.BENEFICIARY_LIST))
                 .body("total", equalTo(0))
-                .body("items.size()", equalTo(0));
+                .body("items", empty());
     }
 
     @Test(description = "Əlavə: Token olmadan GET -> 401")
@@ -141,20 +147,19 @@ public class BeneficiaryListTest extends BaseApiTest {
     public void extra_noToken_returns401() {
         given(spec)
                 .when().get(Endpoints.BENEFICIARIES)
-                .then().statusCode(401);
+                .then().spec(unauthorized());
     }
 
-    @Test(description = "Əlavə: Etibarsız sort deyeri -> 400 VALIDATION_ERROR")
+    @Test(description = "Əlavə: Etibarsız sort dəyəri -> 400 VALIDATION_ERROR, field: sort")
     @Severity(SeverityLevel.NORMAL)
     @Story("Validation")
     public void extra_invalidSortValue_returns400() {
         String token = loginAsUser1();
 
-        given(spec).header("Authorization", "Bearer " + token)
+        authed(token)
                 .queryParam("sort", "invalidfield")
                 .when().get(Endpoints.BENEFICIARIES)
-                .then().statusCode(400)
-                .body("code", equalTo("VALIDATION_ERROR"));
+                .then().spec(validationError("sort"));
     }
 
     @Test(description = "Əlavə (security): SQL-injection payload q parametrində -> 200 ilə 400 arasında")
@@ -163,7 +168,7 @@ public class BeneficiaryListTest extends BaseApiTest {
     public void extra_sqlInjectionInQ_returns200to400() {
         String token = loginAsUser1();
 
-        given(spec).header("Authorization", "Bearer " + token)
+        authed(token)
                 .queryParam("q", "' OR 1=1--")
                 .when().get(Endpoints.BENEFICIARIES)
                 .then().statusCode(allOf(greaterThanOrEqualTo(200), lessThanOrEqualTo(400)));
@@ -177,13 +182,14 @@ public class BeneficiaryListTest extends BaseApiTest {
         createBeneficiary(token, body("Nigar Mammadova", "AZ71NABZ00000000137010009771", "ComboMatch", "AZN"));
         createBeneficiary(token, body("Nigar Huseynova", "AZ72NABZ00000000137010009772", "ComboNoMatch", "USD"));
 
-        given(spec).header("Authorization", "Bearer " + token)
+        authed(token)
                 .queryParam("q", "nig")
                 .queryParam("currency", "AZN")
                 .queryParam("sort", "fullName")
                 .queryParam("order", "asc")
                 .when().get(Endpoints.BENEFICIARIES)
                 .then().statusCode(200)
+                .body(matchesJsonSchemaInClasspath(Schemas.BENEFICIARY_LIST))
                 .body("total", equalTo(1))
                 .body("items[0].fullName", containsString("Nigar"))
                 .body("items[0].currency", equalTo("AZN"));

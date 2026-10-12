@@ -2,6 +2,12 @@
 <!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
 <suite name="GRAD-API-Suite" parallel="false" verbose="1">
 
+    <test name="Auth / Token lifecycle">
+        <classes>
+            <class name="com.grad.api.auth.AuthTokenTest"/>
+        </classes>
+    </test>
+
     <test name="EPIC-1 Saxlanmış alıcılar (Beneficiaries)">
         <classes>
             <class name="com.grad.api.epic1.BeneficiaryCreateTest"/>   <!-- GRAD-101 -->
@@ -26,5 +32,8 @@
             <class name="com.grad.api.epic3.PaymentHistoryTest"/> <!-- GRAD-303 -->
         </classes>
     </test>
+
+    <!-- Rate limit testi (com.grad.api.auth.RateLimitTest) ~650 sorğu göndərdiyi üçün buraya daxil edilməyib:
+         mvn test -DsuiteXml=testng-ratelimit.xml -->
 
 </suite>

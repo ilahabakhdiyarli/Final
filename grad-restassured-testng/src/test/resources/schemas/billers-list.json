@@ -1,0 +1,90 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "billers-list",
+  "description": "GET /billers 200",
+  "type": "object",
+  "required": [
+    "total",
+    "items"
+  ],
+  "properties": {
+    "total": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "category",
+          "subscriberFormat",
+          "minAmount",
+          "maxAmount",
+          "fee",
+          "subscriberPattern"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "UTILITY",
+              "MOBILE",
+              "INTERNET"
+            ]
+          },
+          "subscriberFormat": {
+            "type": "string"
+          },
+          "minAmount": {
+            "type": "number",
+            "minimum": 0,
+            "exclusiveMinimum": true
+          },
+          "maxAmount": {
+            "type": "number"
+          },
+          "fee": {
+            "type": "object",
+            "required": [
+              "type"
+            ],
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "NONE",
+                  "PERCENT",
+                  "FIXED"
+                ]
+              },
+              "value": {
+                "type": "number",
+                "minimum": 0
+              },
+              "min": {
+                "type": "number",
+                "minimum": 0
+              },
+              "max": {
+                "type": "number",
+                "minimum": 0
+              }
+            }
+          },
+          "subscriberPattern": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

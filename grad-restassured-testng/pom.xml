@@ -14,8 +14,8 @@
         aşkarlanan avtomatlaşdırma gap-larını da (spentToday, IDOR block/unblock, receiptNo formatı,
         remaining sahəsi və s.) ayrıca örtür.
 
-        QEYD: Bu testlər bu konversiya mühitində icra OLUNMAYIB (sandbox-a şəbəkə girişi yoxdur).
-        İcra "mvn clean test" ilə IntelliJ terminalında edilməlidir.
+        İcra: "mvn clean test" (bax README.md). Allure nəticələri target/allure-results-ə yazılır
+        (src/test/resources/allure.properties).
     -->
 
     <properties>
@@ -25,6 +25,8 @@
         <restassured.version>5.4.0</restassured.version>
         <allure.version>2.27.0</allure.version>
         <aspectj.version>1.9.22</aspectj.version>
+        <!-- Default suite; rate limit üçün: mvn test -DsuiteXml=testng-ratelimit.xml -->
+        <suiteXml>testng.xml</suiteXml>
     </properties>
 
     <dependencies>
@@ -45,6 +47,14 @@
         <dependency>
             <groupId>io.rest-assured</groupId>
             <artifactId>json-path</artifactId>
+            <version>${restassured.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Cavabların JSON Schema ilə yoxlanması (matchesJsonSchemaInClasspath) -->
+        <dependency>
+            <groupId>io.rest-assured</groupId>
+            <artifactId>json-schema-validator</artifactId>
             <version>${restassured.version}</version>
             <scope>test</scope>
         </dependency>
@@ -103,7 +113,7 @@
                 <version>3.2.5</version>
                 <configuration>
                     <suiteXmlFiles>
-                        <suiteXmlFile>testng.xml</suiteXmlFile>
+                        <suiteXmlFile>${suiteXml}</suiteXmlFile>
                     </suiteXmlFiles>
                     <argLine>
                         -javaagent:"${settings.localRepository}/org/aspectj/aspectjweaver/${aspectj.version}/aspectjweaver-${aspectj.version}.jar"

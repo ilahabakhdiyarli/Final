@@ -17,3 +17,8 @@ target
 .idea
 out
 *.iml
+
+# Local IDE / OS / Allure results
+.claude/
+.DS_Store
+allure-results/

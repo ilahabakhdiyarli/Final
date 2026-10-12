@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<!-- Yalnız rate limit testi (Qayda-3: 600 sorğu / 10 saniyə -> 429 RATE_LIMITED).
+     İşə salmaq: mvn test -DsuiteXml=testng-ratelimit.xml -->
+<suite name="GRAD-API-RateLimit" parallel="false" verbose="1">
+    <test name="Rate limit">
+        <classes>
+            <class name="com.grad.api.auth.RateLimitTest"/>
+        </classes>
+    </test>
+</suite>

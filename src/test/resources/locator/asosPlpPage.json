@@ -16,5 +16,7 @@
   "Colour Option Brown": { "locatorType": "CSS", "locatorValue": "label[for='base_colour_10']" },
   "Clear Filters Button": { "locatorType": "CSS", "locatorValue": "[data-auto-id='clear']" },
   "Price Range Filter Button": { "locatorType": "CSS", "locatorValue": "[data-auto-id='currentprice']" },
-  "PLP Product Price": { "locatorType": "CSS", "locatorValue": "span.price_m0bg_" }
+  "PLP Product Price": { "locatorType": "CSS", "locatorValue": "span[class^='price_']" },
+  "Sort Price Low To High Option": { "locatorType": "CSS", "locatorValue": "label[for='plp_web_sort_price_low_to_high']" },
+  "Sort Price Low To High Radio": { "locatorType": "ID", "locatorValue": "plp_web_sort_price_low_to_high" }
 }

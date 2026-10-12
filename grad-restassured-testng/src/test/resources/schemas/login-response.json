@@ -1,0 +1,52 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "login-response",
+  "description": "POST /auth/login 200",
+  "type": "object",
+  "required": [
+    "token",
+    "user"
+  ],
+  "properties": {
+    "token": {
+      "type": "string",
+      "minLength": 1
+    },
+    "user": {
+      "type": "object",
+      "required": [
+        "id",
+        "name",
+        "email",
+        "role",
+        "phone",
+        "avatar",
+        "createdAt"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string"
+        },
+        "phone": {
+          "type": "string"
+        },
+        "avatar": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]+)?Z$"
+        }
+      }
+    }
+  }
+}

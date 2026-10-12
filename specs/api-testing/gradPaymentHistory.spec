@@ -495,7 +495,7 @@ tags: get, bill-payments, positive, filter
 
 * Initalize request specification
 * Set base Url to "https://api.anarabbas.com"
-* Add Endpoint "/bill-payments?from=2026-10-05&to=2026-10-05"
+* Add Endpoint "/bill-payments?from=${today}&to=${today}"
 * Add as a header "Authorization" = "Bearer ${token}"
 * Get request and display respons
 * Cavabı çap et

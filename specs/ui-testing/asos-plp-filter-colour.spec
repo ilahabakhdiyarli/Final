@@ -2,7 +2,7 @@
 
 Test mühiti: https://www.asos.com
 
-## Rəng üzrə filtrləmə
+## Rəng üzrə filtrləmə — TC-PLP-01 ilə eyni texnika, əlavə ekvivalent sinif (Colour)
 
 * "chrome" brauzeri aç ve keçid et "https://www.asos.com/women/dresses/cat/?cid=8799&refine=base_colour:4"
 * "Filter Button" görsensin deye maksimum "10" saniye gözle

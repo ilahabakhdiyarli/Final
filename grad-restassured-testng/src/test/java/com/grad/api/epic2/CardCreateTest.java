@@ -1,13 +1,27 @@
 package com.grad.api.epic2;
 
 import com.grad.api.base.BaseApiTest;
+import com.grad.api.models.request.BlockCardRequest;
+import com.grad.api.models.request.CardRequest;
+import com.grad.api.models.response.Card;
 import com.grad.api.util.Endpoints;
+import com.grad.api.util.Schemas;
 import io.qameta.allure.*;
+import io.restassured.response.Response;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+
 import static io.restassured.RestAssured.given;
+import static io.restassured.module.jsv.JsonSchemaValidator.matchesJsonSchemaInClasspath;
 import static org.hamcrest.Matchers.*;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNull;
 
 /**
  * GRAD-201 — POST /cards (Virtual kart buraxmaq).
@@ -22,51 +36,68 @@ import static org.hamcrest.Matchers.*;
  *    pul/limit ssenariləri ən yüksək prioritetdə).
  *  - specs/api-testing/gradBlockCard.spec (block body sahəsi: "reason", dəyərlər TEMPORARY/LOST/STOLEN).
  *
- * Heç bir sahə adı/status/error code uydurulmayıb — hamısı yuxarıdaki mənbələrdən verbatim götürülüb.
+ * Heç bir sahə adı/status/error code uydurulmayıb — hamısı yuxarıdaki mənbələrdən və real API
+ * cavablarından (Allure qeydləri) götürülüb.
  */
 @Epic("EPIC-2: Virtual kartlar")
 @Feature("GRAD-201: Kart yaratma")
 public class CardCreateTest extends BaseApiTest {
 
-    /** Spec-dəki literal dəyərləri dəyişmədən JSON body qurur (amountJsonLiteral artıq tırnaqlı/tırnaqsız formada verilir). */
-    private String body(String accountId, String amountJsonLiteral) {
+    private CardRequest body(String accountId, String amount) {
+        return new CardRequest(accountId, new BigDecimal(amount));
+    }
+
+    /** Yalnız tip/format xətası ssenariləri üçün — amountJsonLiteral JSON-a olduğu kimi yazılır. */
+    private String rawBody(String accountId, String amountJsonLiteral) {
         return "{\"accountId\":\"" + accountId + "\",\"initialAmount\":" + amountJsonLiteral + "}";
     }
 
-    private String bodyWithLabel(String accountId, String amountJsonLiteral, String label) {
-        return "{\"accountId\":\"" + accountId + "\",\"initialAmount\":" + amountJsonLiteral + ",\"label\":\"" + label + "\"}";
-    }
-
-    @Test(description = "Etibarlı kart buraxılışı -> 201; status/availableBalance/limits/spentToday/blockReason/id")
+    @Test(description = "AC-1: Etibarlı kart buraxılışı -> 201; status ACTIVE; availableBalance = initialAmount; limitlər 500/300; spentToday 0")
     @Severity(SeverityLevel.CRITICAL)
     @Story("AC-1")
     public void validCardCreation_returns201WithAllFields() {
         String token = loginAsUser1();
-        given(spec).header("Authorization", "Bearer " + token)
-                .body(bodyWithLabel("acc_002", "100", "Test Card"))
+        Response response = authed(token)
+                .body(new CardRequest("acc_002", new BigDecimal("100"), "Test Card"))
                 .when().post(Endpoints.CARDS)
                 .then().statusCode(201)
-                .body("accountId", equalTo("acc_002"))
-                .body("status", equalTo("ACTIVE"))
-                .body("availableBalance", equalTo(100))
-                .body("limits.dailyOnline", equalTo(500))
-                .body("limits.perTransaction", equalTo(300))
-                .body("spentToday", equalTo(0))
-                .body("blockReason", nullValue())
-                .body("id", notNullValue());
+                .body(matchesJsonSchemaInClasspath(Schemas.CARD))
+                .extract().response();
+
+        Card card = response.as(Card.class);
+        assertEquals(card.getAccountId(), "acc_002");
+        assertEquals(card.getStatus(), "ACTIVE");
+        assertEquals(card.getAvailableBalance().compareTo(new BigDecimal("100")), 0, "availableBalance = initialAmount");
+        assertEquals(card.getLimits().getDailyOnline().compareTo(new BigDecimal("500")), 0, "limits.dailyOnline = 500");
+        assertEquals(card.getLimits().getPerTransaction().compareTo(new BigDecimal("300")), 0, "limits.perTransaction = 300");
+        assertEquals(card.getSpentToday().compareTo(BigDecimal.ZERO), 0, "spentToday = 0");
+        assertEquals(card.getLabel(), "Test Card");
+        assertNull(card.getBlockReason());
+        assertEquals(response.header("Location"), "/cards/" + card.getId());
     }
 
-    @Test(description = "maskedPan/expiry formatı regex-ə uyğundur")
+    /**
+     * AC-2: maskedPan "4169 73** **** NNNN"; expiry MM/YY — bu gündən 3 il sonra.
+     * GAP-04 bağlanır: əvvəllər yalnız MM/YY regex-i yoxlanırdı, indi expiry kartın createdAt
+     * tarixinə (UTC) +3 il ilə dəqiq müqayisə olunur.
+     */
+    @Test(description = "AC-2: maskedPan formatı; expiry MM/YY = buraxılış tarixi + 3 il")
     @Severity(SeverityLevel.NORMAL)
     @Story("AC-2")
     public void maskedPanAndExpiry_matchExpectedFormat() {
         String token = loginAsUser1();
-        given(spec).header("Authorization", "Bearer " + token)
+        Card card = authed(token)
                 .body(body("acc_002", "50"))
                 .when().post(Endpoints.CARDS)
                 .then().statusCode(201)
+                .body(matchesJsonSchemaInClasspath(Schemas.CARD))
                 .body("maskedPan", matchesPattern("^4169 73[*]{2} [*]{4} [0-9]{4}$"))
-                .body("expiry", matchesPattern("^[0-9]{2}/[0-9]{2}$"));
+                .body("expiry", matchesPattern("^[0-9]{2}/[0-9]{2}$"))
+                .extract().as(Card.class);
+
+        ZonedDateTime issuedAt = Instant.parse(card.getCreatedAt()).atZone(ZoneOffset.UTC);
+        String expectedExpiry = issuedAt.plusYears(3).format(DateTimeFormatter.ofPattern("MM/yy"));
+        assertEquals(card.getExpiry(), expectedExpiry, "expiry buraxılış tarixindən 3 il sonra olmalıdır");
     }
 
     @DataProvider(name = "initialAmountBoundary")
@@ -83,12 +114,20 @@ public class CardCreateTest extends BaseApiTest {
             description = "AC-3: initialAmount sərhədi (BVA) — 0.99/1000.01 rədd, 1.00/1000.00 qəbul")
     @Severity(SeverityLevel.NORMAL)
     @Story("AC-3")
-    public void initialAmountBoundary_rejectsOrAccepts(String amountLiteral, int expectedStatus) {
+    public void initialAmountBoundary_rejectsOrAccepts(String amount, int expectedStatus) {
         String token = loginAsUser1();
-        given(spec).header("Authorization", "Bearer " + token)
-                .body(body("acc_002", amountLiteral))
+        var then = authed(token)
+                .body(body("acc_002", amount))
                 .when().post(Endpoints.CARDS)
-                .then().statusCode(expectedStatus);
+                .then();
+        if (expectedStatus == 400) {
+            then.spec(validationError("initialAmount"));
+        } else {
+            Card card = then.statusCode(201).body(matchesJsonSchemaInClasspath(Schemas.CARD))
+                    .extract().as(Card.class);
+            assertEquals(card.getAvailableBalance().compareTo(new BigDecimal(amount)), 0,
+                    "availableBalance = initialAmount (" + amount + ")");
+        }
     }
 
     @DataProvider(name = "initialAmountFormatErrors")
@@ -100,26 +139,27 @@ public class CardCreateTest extends BaseApiTest {
     }
 
     @Test(dataProvider = "initialAmountFormatErrors",
-            description = "AC-4: initialAmount format xətaları ('50' mətn / 10.555) -> 400")
+            description = "AC-4: initialAmount format xətaları ('50' mətn / 10.555) -> 400 VALIDATION_ERROR")
     @Severity(SeverityLevel.NORMAL)
     @Story("AC-4")
     public void initialAmountFormatErrors_return400(String amountLiteral) {
         String token = loginAsUser1();
-        given(spec).header("Authorization", "Bearer " + token)
-                .body(body("acc_002", amountLiteral))
+        // Bilərəkdən xam JSON — POJO-nun BigDecimal sahəsi mətn tipini göndərməyə imkan vermir.
+        authed(token)
+                .body(rawBody("acc_002", amountLiteral))
                 .when().post(Endpoints.CARDS)
-                .then().statusCode(400);
+                .then().spec(validationError("initialAmount"));
     }
 
-    @Test(description = "AC-5: Başqasının hesabı ilə kart açmaq (user1 -> acc_003) -> 403")
+    @Test(description = "AC-5: Başqasının hesabı ilə kart açmaq (user1 -> acc_003) -> 403 FORBIDDEN")
     @Severity(SeverityLevel.CRITICAL)
     @Story("AC-5")
     public void anotherUsersAccount_returns403() {
         String token = loginAsUser1();
-        given(spec).header("Authorization", "Bearer " + token)
+        authed(token)
                 .body(body("acc_003", "50"))
                 .when().post(Endpoints.CARDS)
-                .then().statusCode(403);
+                .then().spec(error(403, "FORBIDDEN"));
     }
 
     @Test(description = "AC-7: Kart limiti (3) aşılır — 4-cü kart 422 CARD_LIMIT_REACHED")
@@ -128,27 +168,23 @@ public class CardCreateTest extends BaseApiTest {
     public void cardLimitExceeded_fourthCardReturns422() {
         String token = loginAsUser1();
         for (int i = 0; i < 3; i++) {
-            given(spec).header("Authorization", "Bearer " + token)
-                    .body(body("acc_002", "50"))
-                    .when().post(Endpoints.CARDS)
-                    .then().statusCode(201);
+            createCard(token, "acc_002", 50);
         }
-        given(spec).header("Authorization", "Bearer " + token)
+        authed(token)
                 .body(body("acc_002", "50"))
                 .when().post(Endpoints.CARDS)
-                .then().statusCode(422)
-                .body("code", equalTo("CARD_LIMIT_REACHED"));
+                .then().spec(error(422, "CARD_LIMIT_REACHED"));
     }
 
-    @Test(description = "Mövcud olmayan accountId -> 404")
+    @Test(description = "Mövcud olmayan accountId -> 404 ACCOUNT_NOT_FOUND")
     @Severity(SeverityLevel.NORMAL)
     @Story("Validation")
     public void nonExistentAccountId_returns404() {
         String token = loginAsUser1();
-        given(spec).header("Authorization", "Bearer " + token)
+        authed(token)
                 .body(body("acc_999", "50"))
                 .when().post(Endpoints.CARDS)
-                .then().statusCode(404);
+                .then().spec(error(404, "ACCOUNT_NOT_FOUND"));
     }
 
     @Test(description = "Token yoxdur -> 401")
@@ -158,17 +194,17 @@ public class CardCreateTest extends BaseApiTest {
         given(spec)
                 .body(body("acc_002", "50"))
                 .when().post(Endpoints.CARDS)
-                .then().statusCode(401);
+                .then().spec(unauthorized());
     }
 
     @Test(description = "Saxta token -> 401")
     @Severity(SeverityLevel.CRITICAL)
     @Story("Security")
     public void fakeToken_returns401() {
-        given(spec).header("Authorization", "Bearer saxta.token.deyeri")
+        authed("saxta.token.deyeri")
                 .body(body("acc_002", "50"))
                 .when().post(Endpoints.CARDS)
-                .then().statusCode(401);
+                .then().spec(unauthorized());
     }
 
     @Test(description = "XSS payload - label: 201, label dəyəri olduğu kimi (escape edilmədən) qaytarılır")
@@ -176,10 +212,11 @@ public class CardCreateTest extends BaseApiTest {
     @Story("Security")
     public void xssPayloadInLabel_returns201WithLabelEchoedVerbatim() {
         String token = loginAsUser1();
-        given(spec).header("Authorization", "Bearer " + token)
-                .body(bodyWithLabel("acc_002", "50", "<script>alert(1)</script>"))
+        authed(token)
+                .body(new CardRequest("acc_002", new BigDecimal("50"), "<script>alert(1)</script>"))
                 .when().post(Endpoints.CARDS)
                 .then().statusCode(201)
+                .body(matchesJsonSchemaInClasspath(Schemas.CARD))
                 .body("label", equalTo("<script>alert(1)</script>"));
     }
 
@@ -188,36 +225,30 @@ public class CardCreateTest extends BaseApiTest {
     @Story("AC-1")
     public void labelNotSent_returnsNullLabel() {
         String token = loginAsUser1();
-        given(spec).header("Authorization", "Bearer " + token)
-                .body(body("acc_002", "50"))
-                .when().post(Endpoints.CARDS)
-                .then().statusCode(201)
-                .body("label", nullValue());
+        Card card = createCardEntity(token, "acc_002", 50);
+        assertNull(card.getLabel(), "label göndərilmədikdə null olmalıdır");
     }
 
     /**
      * YENİ (gap-closing) test — mövcud Gauge suite-də yox idi, GRAD-AC-Reference.md AC-6 əsasında yazılıb.
      * Mənbə sətiri: "- **AC-6** Given user2 891 yükləmək istəyir (balans 890.50) When Sorğu rədd edilir
      * Then 422 INSUFFICIENT_FUNDS" (GRAD-AC-Reference.md, GRAD-201 bölməsi).
-     * Error formatı "Ümumi texniki qaydalar"-a əsasən koda görə assert edilir: { "error", "code" }.
      */
     @Test(description = "AC-6 (YENİ): user2, acc_003 balansından (890.50) çox initialAmount (891) -> 422 INSUFFICIENT_FUNDS")
     @Severity(SeverityLevel.CRITICAL)
     @Story("AC-6")
     public void ac6_initialAmountExceedsAvailableBalance_returns422InsufficientFunds() {
         String token = loginAsUser2();
-        given(spec).header("Authorization", "Bearer " + token)
+        authed(token)
                 .body(body("acc_003", "891"))
                 .when().post(Endpoints.CARDS)
-                .then().statusCode(422)
-                .body("code", equalTo("INSUFFICIENT_FUNDS"));
+                .then().spec(error(422, "INSUFFICIENT_FUNDS"));
     }
 
     /**
      * YENİ (gap-closing) test — mövcud Gauge suite-də yox idi, GRAD-AC-Reference.md AC-8 əsasında yazılıb.
      * Mənbə sətiri: "- **AC-8** Given Kartlardan biri BLOCKED edilib When Yeni kart açılır Then 201 —
      * BLOCKED kart limitə sayılmır" (GRAD-AC-Reference.md, GRAD-201 bölməsi).
-     * Block sorğusunun body sahəsi ("reason") specs/api-testing/gradBlockCard.spec-dən götürülüb —
      * reason "LOST" ACTIVE kartı birbaşa BLOCKED statusuna keçirir (gradBlockCard.spec, ssenari 52).
      */
     @Test(description = "AC-8 (YENİ): 3 kart var, biri BLOCKED edilir -> limitə sayılmadığı üçün 4-cü kart 201 ilə yaranır")
@@ -226,24 +257,17 @@ public class CardCreateTest extends BaseApiTest {
     public void ac8_blockedCardDoesNotCountTowardActiveCardLimit() {
         String token = loginAsUser1();
         String firstCardId = createCard(token, "acc_002", 50);
-        given(spec).header("Authorization", "Bearer " + token)
-                .body(body("acc_002", "50"))
-                .when().post(Endpoints.CARDS)
-                .then().statusCode(201);
-        given(spec).header("Authorization", "Bearer " + token)
-                .body(body("acc_002", "50"))
-                .when().post(Endpoints.CARDS)
-                .then().statusCode(201);
+        createCard(token, "acc_002", 50);
+        createCard(token, "acc_002", 50);
 
-        given(spec).header("Authorization", "Bearer " + token)
-                .body("{\"reason\":\"LOST\"}")
+        authed(token)
+                .body(new BlockCardRequest("LOST"))
                 .when().post(Endpoints.cardBlock(firstCardId))
                 .then().statusCode(200)
+                .body(matchesJsonSchemaInClasspath(Schemas.CARD_STATUS))
                 .body("status", equalTo("BLOCKED"));
 
-        given(spec).header("Authorization", "Bearer " + token)
-                .body(body("acc_002", "50"))
-                .when().post(Endpoints.CARDS)
-                .then().statusCode(201);
+        Card fourth = createCardEntity(token, "acc_002", 50);
+        assertEquals(fourth.getStatus(), "ACTIVE", "BLOCKED kart limitə sayılmadığı üçün 4-cü kart ACTIVE yaranmalıdır");
     }
 }

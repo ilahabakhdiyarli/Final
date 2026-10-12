@@ -2,7 +2,7 @@
 
 Test mühiti: https://www.asos.com
 
-## Doğru açar sözlə axtarış
+## Doğru açar sözlə axtarış — TC-SRCH-01
 
 * "chrome" brauzeri aç ve keçid et "https://www.asos.com"
 * "Search Input" elementine "dress" yaz ve Enter düymesine bas

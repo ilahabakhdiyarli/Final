@@ -1,5 +1,43 @@
 # Gauge Test Automation Framework — Web UI & REST API
 
+## Final project — ASOS.com (UI) + api.anarabbas.com (API)
+
+**Author:** Ilaha · ABB Tech Academy, QA Engineering · Deadline: 11.10.2026
+
+| # | Deliverable | Location |
+|---|---|---|
+| 1 | Test plan (one page) | [docs/TestPlan.md](docs/TestPlan.md) |
+| 2 | Test scenarios & test cases — UI (112) + API (123), manual/automation split with justification, regression flag, execution results (browser + result per case) | [docs/Test-Cases-UI-API.xlsx](docs/Test-Cases-UI-API.xlsx) |
+| 3 | AC traceability (69 AC → test case → Gauge spec → RestAssured test → result → bug) | [traceability/GRAD-Traceability-Matrix.xlsx](traceability/GRAD-Traceability-Matrix.xlsx), [docs/GRAD-AC-Reference.md](docs/GRAD-AC-Reference.md), [docs/Test-Design.md](docs/Test-Design.md) |
+| 4 | Callman collection + environment export | [postman/](postman/) |
+| 5 | Bug reports (BUG-01, BUG-02, BUG-03), test-code defects, gaps | [bug-report/GRAD-BugReport-and-Gaps.xlsx](bug-report/GRAD-BugReport-and-Gaps.xlsx) (API) · `docs/Test-Cases-UI-API.xlsx` → "Bug Report" sheet (UI + API) (screenshot sübutları "Bug Report" sheet-inin özündədir) |
+| 6 | RestAssured + TestNG + POJO + JSON Schema project | [grad-restassured-testng/](grad-restassured-testng/README.md) |
+| 7 | Allure report | summary: `docs/Test-Cases-UI-API.xlsx` → "Allure Report (API)" sheet · live: `cd grad-restassured-testng && mvn clean test && mvn allure:serve` |
+
+### How to run
+
+```bash
+# UI (asos.com) — Gauge + Selenium, Chrome
+mvn test -Dgauge.specs.dir=specs/ui-testing
+
+# API (api.anarabbas.com) — Gauge specs
+mvn test -Dgauge.specs.dir=specs/api-testing
+
+# API — RestAssured + TestNG + Allure (147 tests)
+cd grad-restassured-testng
+mvn clean test
+mvn allure:serve
+```
+
+**Notes for reviewers**
+- asos.com is a live production site protected by bot detection and an Akamai WAF. Login submit and "Add to Bag" are blocked for Selenium-driven browsers (they work in a normal browser), so those cases are documented as **Manual** with the root cause in the "Qeyd / Nüans" column. The automated UI specs avoid these flows to stay stable (no flaky tests).
+- Live product data (stock, prices) changes; UI assertions are relative/structural (e.g. result count > 0, currency symbol), not hard-coded values.
+- The API sandbox resets on every `POST /auth/login`; every test creates its own data, so tests are independent and can run in any order.
+
+The rest of this README documents the underlying Gauge framework (Gauge `.spec` versions of the GRAD tests are in `specs/api-testing/grad*.spec`).
+
+---
+
 A ready-to-use test automation framework for graduation projects.
 Pick **any** website or REST API, point the framework at it, and write tests in plain-language `.spec` files
 using ~150 prebuilt steps — **no Java code required** for everyday testing.

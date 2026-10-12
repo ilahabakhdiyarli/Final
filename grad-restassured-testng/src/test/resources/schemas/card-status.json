@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "card-status",
+  "description": "POST /cards/{id}/block|unblock 200",
+  "type": "object",
+  "required": [
+    "id",
+    "status",
+    "blockReason",
+    "blockedAt"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^vcd_[a-z0-9]{8}$"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "ACTIVE",
+        "FROZEN",
+        "BLOCKED"
+      ]
+    },
+    "blockReason": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "TEMPORARY",
+        "LOST",
+        "STOLEN",
+        null
+      ]
+    },
+    "blockedAt": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  }
+}
