@@ -1,0 +1,106 @@
+<div>Status code 200 </div>
+
+
+<h4>Body</h4>
+<div>
+    <pre class="preformated-text">
+{
+    &quot;total&quot;: 6,
+    &quot;items&quot;: [
+        {
+            &quot;id&quot;: &quot;azerisiq&quot;,
+            &quot;name&quot;: &quot;Azərişıq&quot;,
+            &quot;category&quot;: &quot;UTILITY&quot;,
+            &quot;subscriberFormat&quot;: &quot;10 rəqəm&quot;,
+            &quot;minAmount&quot;: 1,
+            &quot;maxAmount&quot;: 500,
+            &quot;fee&quot;: {
+                &quot;type&quot;: &quot;NONE&quot;
+            },
+            &quot;subscriberPattern&quot;: &quot;^\\d{10}$&quot;
+        },
+        {
+            &quot;id&quot;: &quot;azersu&quot;,
+            &quot;name&quot;: &quot;Azərsu&quot;,
+            &quot;category&quot;: &quot;UTILITY&quot;,
+            &quot;subscriberFormat&quot;: &quot;8 rəqəm&quot;,
+            &quot;minAmount&quot;: 1,
+            &quot;maxAmount&quot;: 300,
+            &quot;fee&quot;: {
+                &quot;type&quot;: &quot;NONE&quot;
+            },
+            &quot;subscriberPattern&quot;: &quot;^\\d{8}$&quot;
+        },
+        {
+            &quot;id&quot;: &quot;azercell&quot;,
+            &quot;name&quot;: &quot;Azercell&quot;,
+            &quot;category&quot;: &quot;MOBILE&quot;,
+            &quot;subscriberFormat&quot;: &quot;50/51/10 + 7 rəqəm (məs: 501234567)&quot;,
+            &quot;minAmount&quot;: 0.5,
+            &quot;maxAmount&quot;: 200,
+            &quot;fee&quot;: {
+                &quot;type&quot;: &quot;NONE&quot;
+            },
+            &quot;subscriberPattern&quot;: &quot;^(50|51|10)\\d{7}$&quot;
+        },
+        {
+            &quot;id&quot;: &quot;bakcell&quot;,
+            &quot;name&quot;: &quot;Bakcell&quot;,
+            &quot;category&quot;: &quot;MOBILE&quot;,
+            &quot;subscriberFormat&quot;: &quot;55/99 + 7 rəqəm (məs: 551234567)&quot;,
+            &quot;minAmount&quot;: 0.5,
+            &quot;maxAmount&quot;: 200,
+            &quot;fee&quot;: {
+                &quot;type&quot;: &quot;NONE&quot;
+            },
+            &quot;subscriberPattern&quot;: &quot;^(55|99)\\d{7}$&quot;
+        },
+        {
+            &quot;id&quot;: &quot;citynet&quot;,
+            &quot;name&quot;: &quot;CityNet&quot;,
+            &quot;category&quot;: &quot;INTERNET&quot;,
+            &quot;subscriberFormat&quot;: &quot;CN + 6 rəqəm (məs: CN123456)&quot;,
+            &quot;minAmount&quot;: 5,
+            &quot;maxAmount&quot;: 150,
+            &quot;fee&quot;: {
+                &quot;type&quot;: &quot;PERCENT&quot;,
+                &quot;value&quot;: 1,
+                &quot;min&quot;: 0.2,
+                &quot;max&quot;: 2
+            },
+            &quot;subscriberPattern&quot;: &quot;^CN\\d{6}$&quot;
+        },
+        {
+            &quot;id&quot;: &quot;aztelekom&quot;,
+            &quot;name&quot;: &quot;Aztelekom&quot;,
+            &quot;category&quot;: &quot;INTERNET&quot;,
+            &quot;subscriberFormat&quot;: &quot;7 rəqəm&quot;,
+            &quot;minAmount&quot;: 2,
+            &quot;maxAmount&quot;: 100,
+            &quot;fee&quot;: {
+                &quot;type&quot;: &quot;FIXED&quot;,
+                &quot;value&quot;: 0.5
+            },
+            &quot;subscriberPattern&quot;: &quot;^\\d{7}$&quot;
+        }
+    ]
+}    </pre>
+</div>
+
+<h4>Headers</h4>
+<div>
+        <div>Transfer-Encoding: chunked</div>
+        <div>Nel: {&quot;report_to&quot;:&quot;cf-nel&quot;,&quot;success_fraction&quot;:0.0,&quot;max_age&quot;:604800}</div>
+        <div>Server: cloudflare</div>
+        <div>CF-RAY: a4906c47999090d0-GYD</div>
+        <div>Report-To: {&quot;group&quot;:&quot;cf-nel&quot;,&quot;max_age&quot;:604800,&quot;endpoints&quot;:[{&quot;url&quot;:&quot;https://a.nel.cloudflare.com/report/v4?s=i7LKm3x6c7WCl%2BdFrAImBouOCn5OjotfwLhQaf2QAStWOzZs7NMrxSSYPzbRhDDPQUKRm7sgTEk7CPg2a4oWRaWx7rKtbnXa14pXtsYbcncAXbGmvucdoZlo6v5StqSwSFJGpA%3D%3D&quot;}]}</div>
+        <div>Connection: keep-alive</div>
+        <div>Content-Encoding: gzip</div>
+        <div>Vary: Origin</div>
+        <div>alt-svc: h3=&quot;:443&quot;; ma=86400</div>
+        <div>Date: Sun, 11 Oct 2026 19:55:33 GMT</div>
+        <div>Content-Type: application/json</div>
+        <div>access-control-expose-headers: Location,Idempotent-Replay,Retry-After</div>
+</div>
+
+

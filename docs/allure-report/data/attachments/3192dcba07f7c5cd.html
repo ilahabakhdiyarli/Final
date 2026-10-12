@@ -1,0 +1,33 @@
+<div>POST to https://api.anarabbas.com/bill-payments</div>
+
+    <h4>Body</h4>
+    <div>
+    <pre class="preformated-text">
+{
+    &quot;cardId&quot;: &quot;vcd_g6a6qdzx&quot;,
+    &quot;billerId&quot;: &quot;azerisiq&quot;,
+    &quot;subscriberNo&quot;: &quot;1234567890&quot;,
+    &quot;amount&quot;: 1
+}    </pre>
+    </div>
+
+    <h4>Headers</h4>
+    <div>
+            <div>Authorization: Bearer 2.1791485746887-1jt8fbk.qbtLryc61YK8z5DJdW6vu7Y4F0uL8dXJeYx9AGeyWxg</div>
+            <div>Accept: */*</div>
+            <div>Idempotency-Key: idem-key-p02-018-aaa</div>
+            <div>Content-Type: application/json</div>
+    </div>
+
+
+
+    <h4>Curl</h4>
+    <div>
+        curl -v -X POST &#39;https://api.anarabbas.com/bill-payments&#39; -H &#39;Authorization: Bearer 2.1791485746887-1jt8fbk.qbtLryc61YK8z5DJdW6vu7Y4F0uL8dXJeYx9AGeyWxg&#39; -H &#39;Accept: */*&#39; -H &#39;Idempotency-Key: idem-key-p02-018-aaa&#39; -H &#39;Content-Type: application/json&#39; -d &#39;{
+    &quot;cardId&quot;: &quot;vcd_g6a6qdzx&quot;,
+    &quot;billerId&quot;: &quot;azerisiq&quot;,
+    &quot;subscriberNo&quot;: &quot;1234567890&quot;,
+    &quot;amount&quot;: 1
+}&#39;
+    </div>
+

@@ -22,3 +22,4 @@ out
 .claude/
 .DS_Store
 allure-results/
+.allure/

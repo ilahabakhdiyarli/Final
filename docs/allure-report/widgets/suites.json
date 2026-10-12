@@ -1,0 +1,1 @@
+{"total":2,"items":[{"uid":"ee3cfd33a68c336d68202b96e0bd393b","name":"GRAD-API-Suite","statistic":{"failed":0,"broken":0,"skipped":0,"passed":147,"unknown":0,"total":147}},{"uid":"e194733d9ac0f083bbb8eb4b87e25b17","name":"GRAD-API-RateLimit","statistic":{"failed":0,"broken":0,"skipped":0,"passed":1,"unknown":0,"total":1}}]}

@@ -7,12 +7,13 @@
 | # | Deliverable | Location |
 |---|---|---|
 | 1 | Test plan (one page) | [docs/TestPlan.md](docs/TestPlan.md) |
+| 1a | Analysis — grooming questions (12 open points in the ACs, assumption + outcome for each) | [docs/Grooming-Questions.md](docs/Grooming-Questions.md) |
 | 2 | Test scenarios & test cases — UI (112) + API (123), manual/automation split with justification, regression flag, execution results (browser + result per case) | [docs/Test-Cases-UI-API.xlsx](docs/Test-Cases-UI-API.xlsx) |
 | 3 | AC traceability (69 AC → test case → Gauge spec → RestAssured test → result → bug) | [traceability/GRAD-Traceability-Matrix.xlsx](traceability/GRAD-Traceability-Matrix.xlsx), [docs/GRAD-AC-Reference.md](docs/GRAD-AC-Reference.md), [docs/Test-Design.md](docs/Test-Design.md) |
 | 4 | Callman collection + environment export | [postman/](postman/) |
 | 5 | Bug reports (BUG-01, BUG-02, BUG-03), test-code defects, gaps | [bug-report/GRAD-BugReport-and-Gaps.xlsx](bug-report/GRAD-BugReport-and-Gaps.xlsx) (API) · `docs/Test-Cases-UI-API.xlsx` → "Bug Report" sheet (UI + API) (screenshot sübutları "Bug Report" sheet-inin özündədir) |
 | 6 | RestAssured + TestNG + POJO + JSON Schema project | [grad-restassured-testng/](grad-restassured-testng/README.md) |
-| 7 | Allure report | summary: `docs/Test-Cases-UI-API.xlsx` → "Allure Report (API)" sheet · live: `cd grad-restassured-testng && mvn clean test && mvn allure:serve` |
+| 7 | Allure report | **live: [https://ilahabakhdiyarli.github.io/Final/allure-report/](https://ilahabakhdiyarli.github.io/Final/allure-report/)** (static copy in `docs/allure-report/`) · summary: `docs/Test-Cases-UI-API.xlsx` → "Allure Report (API)" sheet · local: `cd grad-restassured-testng && mvn clean test && mvn allure:serve` |
 
 ### How to run
 
