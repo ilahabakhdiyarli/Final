@@ -1,0 +1,3 @@
+# Gauge spec files are Markdown, not Python (GitHub language statistics)
+*.spec linguist-language=Markdown
+*.spec.disabled linguist-language=Markdown
